@@ -70,7 +70,6 @@ button {
   font-family: inherit;
 }
 
-/* Enhanced Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -95,7 +94,6 @@ button {
   background: var(--surface);
 }
 
-/* Enhanced Animation Classes */
 .fade-in {
   animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -141,7 +139,6 @@ button {
   }
 }
 
-/* Enhanced Focus Styles */
 .focus-ring {
   @apply focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 focus:ring-offset-white;
 }
@@ -150,7 +147,6 @@ button {
   @apply focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-inset;
 }
 
-/* Enhanced Loading Spinner */
 .spinner {
   border: 2px solid var(--border);
   border-top: 2px solid var(--primary);
@@ -169,7 +165,6 @@ button {
   }
 }
 
-/* Pulse Animation */
 .pulse {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
@@ -218,7 +213,6 @@ button {
   box-shadow: var(--shadow-lg);
 }
 
-/* Selection Styles */
 ::selection {
   background: rgba(59, 130, 246, 0.2);
   color: var(--foreground);
@@ -229,14 +223,12 @@ button {
   color: var(--foreground);
 }
 
-/* Print Styles */
 @media print {
   .no-print {
     display: none !important;
   }
 }
 
-/* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
