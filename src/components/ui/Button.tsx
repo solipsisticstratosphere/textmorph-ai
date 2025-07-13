@@ -1,8 +1,17 @@
+"use client";
+
 import React from "react";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline" | "ghost" | "danger";
+  variant?:
+    | "primary"
+    | "secondary"
+    | "outline"
+    | "ghost"
+    | "danger"
+    | "dashboard";
   size?: "sm" | "md" | "lg";
   isLoading?: boolean;
   children: React.ReactNode;
@@ -22,19 +31,20 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center rounded-xl font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95";
+      "inline-flex items-center justify-center rounded-xl font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden";
 
     const variants = {
       primary:
-        "bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 focus:ring-blue-500 shadow-lg hover:shadow-xl",
+        "bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:from-cyan-700 hover:to-blue-700 focus:ring-cyan-500 shadow-lg hover:shadow-xl border border-cyan-600/20",
       secondary:
-        "bg-gradient-to-r from-emerald-600 to-emerald-700 text-white hover:from-emerald-700 hover:to-emerald-800 focus:ring-emerald-500 shadow-lg hover:shadow-xl",
+        "bg-gradient-to-r from-teal-600 to-cyan-600 text-white hover:from-teal-700 hover:to-cyan-700 focus:ring-teal-500 shadow-lg hover:shadow-xl border border-teal-600/20",
       outline:
-        "border-2 border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 focus:ring-blue-500 shadow-sm hover:shadow-md",
-      ghost:
-        "text-gray-600 hover:text-gray-900 hover:bg-gray-100/80 focus:ring-gray-500 backdrop-blur-sm",
+        "border-2 border-slate-300 bg-white/80 backdrop-blur-sm text-slate-700 hover:bg-slate-50 hover:border-slate-400 focus:ring-cyan-500 shadow-sm hover:shadow-md",
+      ghost: "text-slate-600 focus:ring-slate-500 bg-transparent",
       danger:
-        "bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800 focus:ring-red-500 shadow-lg hover:shadow-xl",
+        "bg-gradient-to-r from-red-600 to-pink-600 text-white hover:from-red-700 hover:to-pink-700 focus:ring-red-500 shadow-lg hover:shadow-xl border border-red-600/20",
+      dashboard:
+        "bg-transparent text-white hover:from-cyan-700 hover:to-blue-700 focus:ring-cyan-500 shadow-lg hover:shadow-xl border border-cyan-600/20",
     };
 
     const sizes = {
@@ -44,15 +54,44 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     return (
-      <button
+      <motion.button
         className={cn(baseStyles, variants[variant], sizes[size], className)}
         ref={ref}
         disabled={disabled || isLoading}
-        {...props}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        transition={{ duration: 0.1 }}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        {...(props as any)}
       >
-        {isLoading && <div className="spinner mr-2" />}
+        {/* Shimmer effect for primary and secondary buttons */}
+        {(variant === "primary" || variant === "secondary") && (
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+            initial={{ x: "-100%" }}
+            animate={{ x: "100%" }}
+            transition={{
+              duration: 2,
+              repeat: Number.POSITIVE_INFINITY,
+              repeatType: "loop",
+              ease: "linear",
+            }}
+          />
+        )}
+
+        {isLoading && (
+          <motion.div
+            className="mr-2 w-4 h-4 border-2 border-current border-t-transparent rounded-full"
+            animate={{ rotate: 360 }}
+            transition={{
+              duration: 1,
+              repeat: Number.POSITIVE_INFINITY,
+              ease: "linear",
+            }}
+          />
+        )}
         {children}
-      </button>
+      </motion.button>
     );
   }
 );

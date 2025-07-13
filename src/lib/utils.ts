@@ -1,64 +1,135 @@
-import { type ClassValue, clsx } from "clsx"
+import { type ClassValue, clsx } from "clsx";
 
 export function cn(...inputs: ClassValue[]) {
-  return clsx(inputs)
+  return clsx(inputs);
 }
 
 export function formatText(text: string): string {
-  return text.trim().replace(/\s+/g, ' ')
+  return text.trim().replace(/\s+/g, " ");
 }
 
 export function copyToClipboard(text: string): Promise<void> {
-  return navigator.clipboard.writeText(text)
+  return navigator.clipboard.writeText(text);
 }
 
-export function downloadText(text: string, filename: string = 'transformed-text.txt'): void {
-  const blob = new Blob([text], { type: 'text/plain' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(url)
+export function downloadText(
+  text: string,
+  filename: string = "transformed-text.txt"
+): void {
+  const blob = new Blob([text], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+export async function downloadPDF(
+  content: string,
+  filename: string = "transformed-text"
+): Promise<void> {
+  try {
+    // Dynamic import to avoid SSR issues
+    const { Document, Page, Text, pdf, StyleSheet } = await import(
+      "@react-pdf/renderer"
+    );
+    const React = await import("react");
+
+    // Create styles
+    const styles = StyleSheet.create({
+      page: {
+        flexDirection: "column",
+        backgroundColor: "#FFFFFF",
+        padding: 30,
+      },
+      text: {
+        fontSize: 12,
+        lineHeight: 1.5,
+      },
+    });
+
+    // Strip HTML tags if content comes from rich text editor
+    const stripHtml = (html: string) => {
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      return doc.body.textContent || "";
+    };
+
+    // Create PDF document using React.createElement
+    const MyDocument = () =>
+      React.createElement(
+        Document,
+        {},
+        React.createElement(
+          Page,
+          { size: "A4", style: styles.page },
+          React.createElement(Text, { style: styles.text }, stripHtml(content))
+        )
+      );
+
+    // Generate PDF blob
+    const pdfBlob = await pdf(React.createElement(MyDocument)).toBlob();
+    const url = URL.createObjectURL(pdfBlob);
+
+    // Create download link
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${filename}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("PDF generation failed:", error);
+    throw new Error("Failed to generate PDF");
+  }
 }
 
 export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout | null = null
-  
+  let timeout: NodeJS.Timeout | null = null;
+
   return (...args: Parameters<T>) => {
-    if (timeout) clearTimeout(timeout)
-    timeout = setTimeout(() => func(...args), wait)
-  }
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
 }
 
-export function validateInput(text: string): { isValid: boolean; error?: string } {
+export function validateInput(text: string): {
+  isValid: boolean;
+  error?: string;
+} {
   if (!text.trim()) {
-    return { isValid: false, error: 'Please enter some text to transform' }
+    return { isValid: false, error: "Please enter some text to transform" };
   }
-  
+
   if (text.length > 10000) {
-    return { isValid: false, error: 'Text is too long. Please limit to 10,000 characters.' }
+    return {
+      isValid: false,
+      error: "Text is too long. Please limit to 10,000 characters.",
+    };
   }
-  
-  return { isValid: true }
+
+  return { isValid: true };
 }
 
 export function getWordCount(text: string): number {
-  return text.trim().split(/\s+/).filter(word => word.length > 0).length
+  return text
+    .trim()
+    .split(/\s+/)
+    .filter((word) => word.length > 0).length;
 }
 
 export function getCharacterCount(text: string): number {
-  return text.length
+  return text.length;
 }
 
 export function estimateReadingTime(text: string): number {
-  const wordsPerMinute = 200
-  const wordCount = getWordCount(text)
-  return Math.ceil(wordCount / wordsPerMinute)
+  const wordsPerMinute = 200;
+  const wordCount = getWordCount(text);
+  return Math.ceil(wordCount / wordsPerMinute);
 }
-

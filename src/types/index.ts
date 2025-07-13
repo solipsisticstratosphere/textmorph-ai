@@ -4,6 +4,7 @@ export interface TransformationRequest {
   model_preference?: string;
   max_tokens?: number;
   temperature?: number;
+  target_language?: string;
 }
 
 export interface TransformationResponse {
@@ -13,6 +14,13 @@ export interface TransformationResponse {
   processing_time: number;
   token_count: number;
   error?: string;
+  detected_language?: string;
+}
+
+export interface Language {
+  code: string;
+  name: string;
+  native_name: string;
 }
 
 export interface TransformationPreset {
@@ -22,6 +30,7 @@ export interface TransformationPreset {
   instruction_template: string;
   category: "tone" | "format" | "length";
   icon?: React.ReactNode;
+  recommended_temperature?: number;
 }
 
 export interface TransformationHistory {

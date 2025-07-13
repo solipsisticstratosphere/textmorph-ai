@@ -1,119 +1,205 @@
+"use client";
+
+import { motion } from "framer-motion";
 import { Sparkles, Github, Twitter, Mail, Heart } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="bg-white/80 backdrop-blur-sm border-t border-gray-200/50">
+    <motion.footer
+      className="bg-white/80 backdrop-blur-sm border-t border-slate-200/50"
+      variants={{
+        hidden: { opacity: 0, y: 50 },
+        visible: {
+          opacity: 1,
+          y: 0,
+          transition: { duration: 0.6, ease: "easeOut", staggerChildren: 0.1 },
+        },
+      }}
+      initial="hidden"
+      animate="visible"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
-          <div className="col-span-1 md:col-span-2">
+          <motion.div
+            className="col-span-1 md:col-span-2"
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: {
+                opacity: 1,
+                y: 0,
+                transition: { duration: 0.4, ease: "easeOut" },
+              },
+            }}
+          >
             <div className="flex items-center space-x-3 mb-6">
-              <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl shadow-lg">
+              <motion.div
+                className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-cyan-600 to-blue-600 rounded-xl shadow-lg"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                transition={{ duration: 0.2 }}
+              >
                 <Sparkles className="w-5 h-5 text-white" />
-              </div>
+              </motion.div>
               <div className="flex flex-col">
-                <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <span className="text-2xl font-bold bg-gradient-to-r from-cyan-600 via-blue-600 to-teal-600 bg-clip-text text-transparent">
                   TextMorph
                 </span>
-                <span className="text-sm text-gray-500 -mt-1 font-medium">
+                <span className="text-sm text-slate-500 -mt-1 font-medium">
                   AI
                 </span>
               </div>
             </div>
-            <p className="text-gray-600 mb-6 max-w-md leading-relaxed">
+            <p className="text-slate-600 mb-6 max-w-md leading-relaxed">
               Transform your thoughts into perfect form. Empower your writing
               with AI-powered text transformation that understands context and
               intent.
             </p>
             <div className="flex space-x-4">
-              <a
-                href="#"
-                className="flex items-center justify-center w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-200 hover:scale-105 group"
-                aria-label="GitHub"
-              >
-                <Github className="w-5 h-5 text-gray-600 group-hover:text-gray-900" />
-              </a>
-              <a
-                href="#"
-                className="flex items-center justify-center w-10 h-10 bg-gray-100 hover:bg-blue-100 rounded-lg transition-all duration-200 hover:scale-105 group"
-                aria-label="Twitter"
-              >
-                <Twitter className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
-              </a>
-              <a
-                href="#"
-                className="flex items-center justify-center w-10 h-10 bg-gray-100 hover:bg-emerald-100 rounded-lg transition-all duration-200 hover:scale-105 group"
-                aria-label="Email"
-              >
-                <Mail className="w-5 h-5 text-gray-600 group-hover:text-emerald-600" />
-              </a>
+              {[
+                {
+                  icon: Github,
+                  label: "GitHub",
+                  hoverColor: "hover:bg-slate-100",
+                },
+                {
+                  icon: Twitter,
+                  label: "Twitter",
+                  hoverColor: "hover:bg-blue-100",
+                },
+                { icon: Mail, label: "Email", hoverColor: "hover:bg-teal-100" },
+              ].map(({ icon: Icon, label, hoverColor }, index) => (
+                <motion.a
+                  key={label}
+                  href="#"
+                  className={`flex items-center justify-center w-10 h-10 bg-slate-100 ${hoverColor} rounded-lg transition-all duration-200 group`}
+                  aria-label={label}
+                  whileHover={{ scale: 1.1, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                >
+                  <Icon className="w-5 h-5 text-slate-600 group-hover:text-slate-900 transition-colors duration-200" />
+                </motion.a>
+              ))}
             </div>
-          </div>
+          </motion.div>
 
           {/* Product */}
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-4 uppercase tracking-wider">
+          <motion.div
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: {
+                opacity: 1,
+                y: 0,
+                transition: { duration: 0.4, ease: "easeOut" },
+              },
+            }}
+          >
+            <h3 className="text-sm font-semibold text-slate-900 mb-4 uppercase tracking-wider">
               Product
             </h3>
             <ul className="space-y-3">
-              {["Features", "Pricing", "API", "Changelog"].map((item) => (
-                <li key={item}>
-                  <a
-                    href="#"
-                    className="text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm hover:translate-x-1 inline-block"
+              {["Features", "Pricing", "API", "Changelog"].map(
+                (item, index) => (
+                  <motion.li
+                    key={item}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
                   >
-                    {item}
-                  </a>
-                </li>
-              ))}
+                    <motion.a
+                      href="#"
+                      className="text-slate-700 hover:text-cyan-600 transition-colors duration-200 text-sm inline-block"
+                      whileHover={{ x: 4 }}
+                    >
+                      {item}
+                    </motion.a>
+                  </motion.li>
+                )
+              )}
             </ul>
-          </div>
+          </motion.div>
 
           {/* Support */}
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-4 uppercase tracking-wider">
+          <motion.div
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: {
+                opacity: 1,
+                y: 0,
+                transition: { duration: 0.4, ease: "easeOut" },
+              },
+            }}
+          >
+            <h3 className="text-sm font-semibold text-slate-900 mb-4 uppercase tracking-wider">
               Support
             </h3>
             <ul className="space-y-3">
               {["Documentation", "Help Center", "Contact Us", "Status"].map(
-                (item) => (
-                  <li key={item}>
-                    <a
+                (item, index) => (
+                  <motion.li
+                    key={item}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                  >
+                    <motion.a
                       href="#"
-                      className="text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm hover:translate-x-1 inline-block"
+                      className="text-slate-700 hover:text-cyan-600 transition-colors duration-200 text-sm inline-block"
+                      whileHover={{ x: 4 }}
                     >
                       {item}
-                    </a>
-                  </li>
+                    </motion.a>
+                  </motion.li>
                 )
               )}
             </ul>
-          </div>
+          </motion.div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-gray-200/50">
+        <motion.div
+          className="mt-12 pt-8 border-t border-slate-200/50"
+          variants={{
+            hidden: { opacity: 0, y: 20 },
+            visible: {
+              opacity: 1,
+              y: 0,
+              transition: { duration: 0.4, ease: "easeOut" },
+            },
+          }}
+        >
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center space-x-2 text-gray-500 text-sm">
+            <div className="flex items-center space-x-2 text-slate-600 text-sm">
               <span>© 2025 TextMorph AI. Made with</span>
-              <Heart className="w-4 h-4 text-red-500 fill-current" />
+              <motion.div
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY }}
+              >
+                <Heart className="w-4 h-4 text-red-500 fill-current" />
+              </motion.div>
               <span>for better writing.</span>
             </div>
             <div className="flex space-x-6 mt-4 md:mt-0">
               {["Privacy Policy", "Terms of Service", "Cookie Policy"].map(
-                (item) => (
-                  <a
+                (item, index) => (
+                  <motion.a
                     key={item}
                     href="#"
-                    className="text-gray-500 hover:text-gray-700 text-sm transition-colors duration-200"
+                    className="text-slate-600 hover:text-slate-800 text-sm transition-colors duration-200"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                    whileHover={{ y: -2 }}
                   >
                     {item}
-                  </a>
+                  </motion.a>
                 )
               )}
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
-    </footer>
+    </motion.footer>
   );
 }

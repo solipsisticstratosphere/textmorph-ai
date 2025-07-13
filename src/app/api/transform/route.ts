@@ -34,8 +34,38 @@ function checkRateLimit(key: string): { allowed: boolean; resetTime?: number } {
   return { allowed: true };
 }
 
+function sanitizeInput(input: string): string {
+  return input
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, "")
+    .trim();
+}
+
+function verifyCsrfToken(request: NextRequest): boolean {
+  const referer = request.headers.get("referer");
+  const host = request.headers.get("host");
+
+  if (!referer || !host) {
+    return false;
+  }
+
+  try {
+    const refererUrl = new URL(referer);
+    return refererUrl.host === host;
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
+    if (!verifyCsrfToken(request)) {
+      return NextResponse.json(
+        { error: "CSRF validation failed" },
+        { status: 403 }
+      );
+    }
+
     const rateLimitKey = getRateLimitKey(request);
     const rateLimit = checkRateLimit(rateLimitKey);
 
@@ -49,7 +79,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body: TransformationRequest = await request.json();
+    let body: TransformationRequest;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { error: "Invalid JSON in request body" },
+        { status: 400 }
+      );
+    }
 
     if (!body.input_text || !body.transformation_instruction) {
       return NextResponse.json(
@@ -78,17 +116,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Sanitize input
+    const aiService = AIService.getInstance();
+    const supportedLanguages = aiService
+      .getSupportedLanguages()
+      .map((lang) => lang.code);
+
+    if (
+      body.target_language &&
+      body.target_language !== "auto" &&
+      !supportedLanguages.includes(body.target_language)
+    ) {
+      return NextResponse.json(
+        {
+          error: `Unsupported target language: ${
+            body.target_language
+          }. Supported languages: ${supportedLanguages.join(", ")}`,
+        },
+        { status: 400 }
+      );
+    }
+
     const sanitizedRequest: TransformationRequest = {
-      input_text: body.input_text.trim(),
-      transformation_instruction: body.transformation_instruction.trim(),
+      input_text: sanitizeInput(body.input_text),
+      transformation_instruction: sanitizeInput(
+        body.transformation_instruction
+      ),
       model_preference: body.model_preference || "default",
       max_tokens: Math.min(body.max_tokens || 1000, 2000),
       temperature: Math.max(0, Math.min(body.temperature || 0.7, 1)),
+      target_language: body.target_language || "auto",
     };
 
-    // Process transformation
-    const aiService = AIService.getInstance();
     const result = await aiService.transformText(sanitizedRequest);
 
     if (!result.success) {
@@ -98,8 +156,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Return successful response
-    return NextResponse.json(result);
+    const responseHeaders = new Headers();
+    responseHeaders.set("Content-Type", "application/json");
+    responseHeaders.set("X-Content-Type-Options", "nosniff");
+    responseHeaders.set("X-Frame-Options", "DENY");
+    responseHeaders.set("X-XSS-Protection", "1; mode=block");
+    responseHeaders.set("Content-Security-Policy", "default-src 'self'");
+
+    return NextResponse.json(result, {
+      status: 200,
+      headers: responseHeaders,
+    });
   } catch (error) {
     console.error("Transform API error:", error);
 
@@ -111,16 +178,27 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
-  return NextResponse.json({
-    message: "TextMorph AI Transform API",
-    version: "1.0.0",
-    endpoints: {
-      POST: "/api/transform - Transform text with AI",
+  const responseHeaders = new Headers();
+  responseHeaders.set("Content-Type", "application/json");
+  responseHeaders.set("X-Content-Type-Options", "nosniff");
+  responseHeaders.set("X-Frame-Options", "DENY");
+  responseHeaders.set("X-XSS-Protection", "1; mode=block");
+  responseHeaders.set("Content-Security-Policy", "default-src 'self'");
+
+  return NextResponse.json(
+    {
+      message: "TextMorph AI Transform API",
+      version: "1.0.0",
+      endpoints: {
+        POST: "/api/transform - Transform text with AI",
+      },
     },
-  });
+    {
+      headers: responseHeaders,
+    }
+  );
 }
 
-// Handle CORS for development
 export async function OPTIONS() {
   return new NextResponse(null, {
     status: 200,
@@ -128,6 +206,9 @@ export async function OPTIONS() {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY",
+      "X-XSS-Protection": "1; mode=block",
     },
   });
 }

@@ -3,7 +3,11 @@ import { TransformationPreset } from "@/types";
 
 export const dynamic = "force-dynamic";
 
-const TRANSFORMATION_PRESETS: TransformationPreset[] = [
+interface EnhancedTransformationPreset extends TransformationPreset {
+  recommended_temperature?: number;
+}
+
+const TRANSFORMATION_PRESETS: EnhancedTransformationPreset[] = [
   {
     id: "professional",
     name: "Make Professional",
@@ -12,6 +16,7 @@ const TRANSFORMATION_PRESETS: TransformationPreset[] = [
       "Rewrite this text in a professional, formal tone suitable for business communication",
     category: "tone",
     icon: "💼",
+    recommended_temperature: 0.6,
   },
   {
     id: "casual",
@@ -20,6 +25,7 @@ const TRANSFORMATION_PRESETS: TransformationPreset[] = [
     instruction_template: "Rewrite this text in a casual, friendly tone",
     category: "tone",
     icon: "😊",
+    recommended_temperature: 0.7,
   },
   {
     id: "bullet-points",
@@ -29,6 +35,7 @@ const TRANSFORMATION_PRESETS: TransformationPreset[] = [
       "Convert this text into clear, well-organized bullet points",
     category: "format",
     icon: "📝",
+    recommended_temperature: 0.4,
   },
   {
     id: "summary",
@@ -38,6 +45,7 @@ const TRANSFORMATION_PRESETS: TransformationPreset[] = [
       "Create a concise summary of the main points in this text",
     category: "length",
     icon: "📄",
+    recommended_temperature: 0.5,
   },
   {
     id: "expand",
@@ -47,6 +55,7 @@ const TRANSFORMATION_PRESETS: TransformationPreset[] = [
       "Expand this text with more detail and explanation while maintaining the core message",
     category: "length",
     icon: "📈",
+    recommended_temperature: 0.8,
   },
   {
     id: "simplify",
@@ -56,6 +65,7 @@ const TRANSFORMATION_PRESETS: TransformationPreset[] = [
       "Simplify this text to make it easier to understand for a general audience",
     category: "length",
     icon: "🎯",
+    recommended_temperature: 0.5,
   },
   {
     id: "academic",
@@ -65,6 +75,7 @@ const TRANSFORMATION_PRESETS: TransformationPreset[] = [
       "Rewrite this text in an academic style with proper citations and formal language",
     category: "tone",
     icon: "🎓",
+    recommended_temperature: 0.4,
   },
   {
     id: "creative",
@@ -74,6 +85,7 @@ const TRANSFORMATION_PRESETS: TransformationPreset[] = [
       "Rewrite this text in a creative, engaging style with vivid descriptions",
     category: "tone",
     icon: "✨",
+    recommended_temperature: 0.9,
   },
   {
     id: "email",
@@ -83,6 +95,7 @@ const TRANSFORMATION_PRESETS: TransformationPreset[] = [
       "Format this text as a professional email with proper greeting and closing",
     category: "format",
     icon: "📧",
+    recommended_temperature: 0.6,
   },
   {
     id: "social-media",
@@ -92,6 +105,7 @@ const TRANSFORMATION_PRESETS: TransformationPreset[] = [
       "Rewrite this text to be engaging and suitable for social media platforms",
     category: "format",
     icon: "📱",
+    recommended_temperature: 0.8,
   },
   {
     id: "technical",
@@ -101,6 +115,7 @@ const TRANSFORMATION_PRESETS: TransformationPreset[] = [
       "Rewrite this text as clear, precise technical documentation",
     category: "tone",
     icon: "⚙️",
+    recommended_temperature: 0.3,
   },
   {
     id: "persuasive",
@@ -110,17 +125,30 @@ const TRANSFORMATION_PRESETS: TransformationPreset[] = [
       "Rewrite this text to be more persuasive and compelling",
     category: "tone",
     icon: "🎯",
+    recommended_temperature: 0.7,
   },
 ];
 
 export async function GET() {
   try {
-    return NextResponse.json({
-      success: true,
-      presets: TRANSFORMATION_PRESETS,
-      total: TRANSFORMATION_PRESETS.length,
-      categories: [...new Set(TRANSFORMATION_PRESETS.map((p) => p.category))],
-    });
+    const responseHeaders = new Headers();
+    responseHeaders.set("Content-Type", "application/json");
+    responseHeaders.set("X-Content-Type-Options", "nosniff");
+    responseHeaders.set("X-Frame-Options", "DENY");
+    responseHeaders.set("X-XSS-Protection", "1; mode=block");
+    responseHeaders.set("Content-Security-Policy", "default-src 'self'");
+
+    return NextResponse.json(
+      {
+        success: true,
+        presets: TRANSFORMATION_PRESETS,
+        total: TRANSFORMATION_PRESETS.length,
+        categories: [...new Set(TRANSFORMATION_PRESETS.map((p) => p.category))],
+      },
+      {
+        headers: responseHeaders,
+      }
+    );
   } catch (error) {
     console.error("Presets API error:", error);
 
@@ -138,6 +166,9 @@ export async function OPTIONS() {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY",
+      "X-XSS-Protection": "1; mode=block",
     },
   });
 }

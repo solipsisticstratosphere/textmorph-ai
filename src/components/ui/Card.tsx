@@ -1,4 +1,7 @@
+"use client";
+
 import React from "react";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -10,21 +13,25 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, children, variant = "default", ...props }, ref) => {
     const variants = {
       default:
-        "bg-white rounded-2xl shadow-sm border border-gray-200/50 hover:shadow-md transition-all duration-200",
+        "bg-white/90 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/50 hover:shadow-md transition-all duration-300",
       elevated:
-        "bg-white rounded-2xl shadow-lg border border-gray-200/50 hover:shadow-xl transition-all duration-200",
+        "bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border border-slate-200/50 hover:shadow-xl transition-all duration-300",
       glass:
-        "glass rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200",
+        "bg-white/80 backdrop-blur-xl rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-white/30",
     };
 
     return (
-      <div
+      <motion.div
         ref={ref}
         className={cn("p-6", variants[variant], className)}
-        {...props}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        {...(props as any)}
       >
         {children}
-      </div>
+      </motion.div>
     );
   }
 );
@@ -57,7 +64,7 @@ const CardTitle = React.forwardRef<HTMLHeadingElement, CardTitleProps>(
       <h3
         ref={ref}
         className={cn(
-          "text-xl font-bold text-gray-900 tracking-tight",
+          "text-xl font-bold text-slate-800 tracking-tight",
           className
         )}
         {...props}
@@ -79,7 +86,7 @@ const CardContent = React.forwardRef<HTMLDivElement, CardContentProps>(
     return (
       <div
         ref={ref}
-        className={cn("text-gray-600 leading-relaxed", className)}
+        className={cn("text-slate-600 leading-relaxed", className)}
         {...props}
       >
         {children}

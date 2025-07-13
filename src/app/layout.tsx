@@ -1,5 +1,5 @@
 import type React from "react";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -14,6 +14,11 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
   variable: "--font-mono",
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   title: "TextMorph AI - Transform your thoughts into perfect form",
@@ -46,8 +51,7 @@ export const metadata: Metadata = {
       "Empower users to instantly transform any text into the exact format, style, or structure they need using AI-powered text transformation.",
     creator: "@textmorphai",
   },
-  viewport: "width=device-width, initial-scale=1",
-  themeColor: "#3b82f6",
+  // themeColor: "#3b82f6",
 };
 
 export default function RootLayout({

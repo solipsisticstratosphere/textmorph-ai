@@ -1,22 +1,12 @@
 import { NextResponse } from "next/server";
+import { AIService } from "@/lib/ai-service";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const healthData = {
-      status: "healthy",
-      timestamp: new Date().toISOString(),
-      version: "1.0.0",
-      service: "TextMorph AI API",
-      uptime: process.uptime(),
-      memory: {
-        used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
-        total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
-        external: Math.round(process.memoryUsage().external / 1024 / 1024),
-      },
-      environment: process.env.NODE_ENV || "development",
-    };
+    const aiService = AIService.getInstance();
+    const languages = aiService.getSupportedLanguages();
 
     const responseHeaders = new Headers();
     responseHeaders.set("Content-Type", "application/json");
@@ -25,25 +15,22 @@ export async function GET() {
     responseHeaders.set("X-XSS-Protection", "1; mode=block");
     responseHeaders.set("Content-Security-Policy", "default-src 'self'");
 
-    return NextResponse.json(healthData, {
-      headers: responseHeaders,
-    });
-  } catch {
     return NextResponse.json(
       {
-        status: "unhealthy",
-        error: "Health check failed",
-        timestamp: new Date().toISOString(),
+        success: true,
+        languages,
+        total: languages.length,
       },
       {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json",
-          "X-Content-Type-Options": "nosniff",
-          "X-Frame-Options": "DENY",
-          "X-XSS-Protection": "1; mode=block",
-        },
+        headers: responseHeaders,
       }
+    );
+  } catch (error) {
+    console.error("Languages API error:", error);
+
+    return NextResponse.json(
+      { error: "Failed to fetch languages" },
+      { status: 500 }
     );
   }
 }

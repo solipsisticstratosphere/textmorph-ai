@@ -1,4 +1,7 @@
+"use client";
+
 import React from "react";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -17,21 +20,26 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <motion.label
+            className="block text-sm font-semibold text-slate-700 mb-2"
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.2 }}
+          >
             {label}
-          </label>
+          </motion.label>
         )}
         <div className="relative">
           {leftIcon && (
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
               {leftIcon}
             </div>
           )}
-          <input
+          <motion.input
             className={cn(
-              "w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 bg-white",
-              "focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white",
-              "disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed",
+              "w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm placeholder-slate-400 bg-white/80 backdrop-blur-sm",
+              "focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 focus:bg-white",
+              "disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed",
               "transition-all duration-200",
               leftIcon && "pl-10",
               rightIcon && "pr-10",
@@ -40,22 +48,37 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               className
             )}
             ref={ref}
-            {...props}
+            whileFocus={{ scale: 1.01 }}
+            transition={{ duration: 0.1 }}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            {...(props as any)}
           />
           {rightIcon && (
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400">
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400">
               {rightIcon}
             </div>
           )}
         </div>
         {error && (
-          <p className="mt-2 text-sm text-red-600 flex items-center">
+          <motion.p
+            className="mt-2 text-sm text-red-600 flex items-center"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+          >
             <span className="w-1 h-1 bg-red-600 rounded-full mr-2"></span>
             {error}
-          </p>
+          </motion.p>
         )}
         {helperText && !error && (
-          <p className="mt-2 text-sm text-gray-500">{helperText}</p>
+          <motion.p
+            className="mt-2 text-sm text-slate-500"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            {helperText}
+          </motion.p>
         )}
       </div>
     );
