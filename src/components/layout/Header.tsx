@@ -1,8 +1,9 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import Image from "next/image";
 
 interface HeaderProps {
   onMenuToggle?: () => void;
@@ -32,7 +33,7 @@ export function Header({ onMenuToggle, showMobileMenu = false }: HeaderProps) {
             whileHover="hover"
           >
             <motion.div
-              className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-cyan-600 to-blue-600 rounded-xl shadow-lg"
+              className="flex items-center justify-center w-10 h-10  shadow-lg overflow-hidden"
               variants={{
                 hover: {
                   scale: 1.05,
@@ -41,7 +42,7 @@ export function Header({ onMenuToggle, showMobileMenu = false }: HeaderProps) {
                 },
               }}
             >
-              <Sparkles className="w-5 h-5 text-white" />
+              <Image src="/logo.svg" alt="Logo" width={40} height={40} />
             </motion.div>
             <div className="flex flex-col">
               <span className="text-xl font-bold bg-gradient-to-r from-cyan-600 via-blue-600 to-teal-600 bg-clip-text text-transparent">
