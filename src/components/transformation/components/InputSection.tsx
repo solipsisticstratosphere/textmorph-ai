@@ -1,6 +1,13 @@
 import { useCallback, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Wand2, RotateCcw, Thermometer, Globe, Trash2 } from "lucide-react";
+import {
+  Wand2,
+  RotateCcw,
+  Thermometer,
+  Globe,
+  Trash2,
+  PencilLine,
+} from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Textarea";
 import { Input } from "@/components/ui/Input";
@@ -8,6 +15,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { useTransformationStore } from "@/lib/store";
 import { validateInput, getWordCount, getCharacterCount } from "@/lib/utils";
 import type { Language } from "@/types";
+import { useTypewriter } from "react-simple-typewriter";
 
 interface InputSectionProps {
   onTransform: () => Promise<void>;
@@ -35,7 +43,26 @@ export function InputSection({
 
   const [languages, setLanguages] = useState<Language[]>([]);
   const [isLoadingLanguages, setIsLoadingLanguages] = useState(true);
+  const [typingPlaceholder, setTypingPlaceholder] = useState("");
 
+  const [text] = useTypewriter({
+    words: [
+      "Paste or type your text here...",
+      "Write something interesting...",
+      "Напишіть щось цікаве...",
+      "Напиши что-то интересное...",
+      "Écris quelque chose d'intéressant...",
+      "面白いことを書いてください...",
+    ],
+    loop: 0, // 0 — бесконечно
+    typeSpeed: 50,
+    deleteSpeed: 30,
+    delaySpeed: 2000,
+  });
+
+  useEffect(() => {
+    setTypingPlaceholder(text);
+  }, [text]);
   // Fetch supported languages
   useEffect(() => {
     const fetchLanguages = async () => {
@@ -133,7 +160,7 @@ export function InputSection({
         <CardContent className="space-y-6">
           <div className="relative">
             <Textarea
-              placeholder="Paste or type your text here... ✨"
+              placeholder={inputText === "" ? typingPlaceholder : undefined}
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               rows={12}
@@ -163,28 +190,81 @@ export function InputSection({
               )}
             </AnimatePresence>
           </div>
-          <Input
-            placeholder="Describe how you want to transform the text... 🎯"
-            value={instruction}
-            onChange={(e) => setInstruction(e.target.value)}
-            className="text-base"
-          />
+          <div className="relative w-full">
+            {/* Кастомный плейсхолдер */}
+            {instruction === "" && (
+              <div className="absolute inset-y-0 left-4 flex items-center text-slate-400 pointer-events-none space-x-2 z-10">
+                <span className="text-sm">
+                  Describe how you want to transform the text...
+                </span>
+                <PencilLine className="w-4 h-4" />
+              </div>
+            )}
+            <Input
+              placeholder=""
+              value={instruction}
+              onChange={(e) => setInstruction(e.target.value)}
+              className="text-base"
+            />
+          </div>
           <div className="grid grid-cols-1 gap-4">
             <div className="flex items-center space-x-3 bg-slate-50 p-3 rounded-lg">
               <Thermometer className="w-5 h-5 text-slate-500 flex-shrink-0" />
               <span className="text-sm text-slate-700 whitespace-nowrap min-w-[120px]">
                 Temperature: {temperature.toFixed(1)}
               </span>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                value={temperature}
-                onChange={handleTemperatureChange}
-                className="flex-1 temperature-slider"
-              />
+              <div className="flex-1 relative h-6 bg-gray-200 rounded-full overflow-hidden">
+                {/* Жидкость с волновым эффектом */}
+                <div
+                  className="absolute bottom-0 left-0 h-full transition-all duration-500 ease-out"
+                  style={{
+                    width: `${temperature * 100}%`,
+                    background: `linear-gradient(45deg, 
+    #bae6fd ${temperature < 0.3 ? "100%" : "0%"},  /* light blue */
+    #60a5fa ${temperature < 0.6 ? "100%" : "0%"},  /* blue-400 */
+    #1d4ed8 100%                                   /* blue-700 */
+  )`,
+                  }}
+                >
+                  <div
+                    className="absolute top-0 left-0 w-full h-full opacity-50"
+                    style={{
+                      background: `repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 10px,
+                    rgba(255,255,255,0.2) 10px,
+                    rgba(255,255,255,0.2) 20px
+                  )`,
+                      animation:
+                        temperature > 0.1 ? "wave 2s linear infinite" : "none",
+                    }}
+                  />
+                </div>
+
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={temperature}
+                  onChange={handleTemperatureChange}
+                  className="absolute inset-0 w-full h-full bg-transparent appearance-none cursor-pointer opacity-0 z-10"
+                />
+
+                <style jsx>{`
+                  @keyframes wave {
+                    0% {
+                      transform: translateX(-20px);
+                    }
+                    100% {
+                      transform: translateX(0px);
+                    }
+                  }
+                `}</style>
+              </div>
             </div>
+
             <div className="flex items-center space-x-3 bg-slate-50 p-3 rounded-lg">
               <Globe className="w-5 h-5 text-slate-500 flex-shrink-0" />
               <span className="text-sm text-slate-700 whitespace-nowrap min-w-[120px]">
@@ -193,7 +273,7 @@ export function InputSection({
               <select
                 value={selectedLanguage}
                 onChange={handleLanguageChange}
-                className="flex-1 min-w-0 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 bg-white text-slate-700"
+                className="appearance-none flex-1 min-w-0 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 bg-white text-slate-700"
                 disabled={isLoadingLanguages}
               >
                 {isLoadingLanguages ? (
@@ -224,10 +304,7 @@ export function InputSection({
                 {isLoading ? "Transforming..." : "Transform Text"}
               </Button>
             </motion.div>
-            <motion.div
-              whileHover={{ scale: 1.05, rotate: 180 }}
-              whileTap={{ scale: 0.95 }}
-            >
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
                 variant="outline"
                 onClick={handleClear}

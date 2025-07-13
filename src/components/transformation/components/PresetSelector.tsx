@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Sparkles,
   FileText,
@@ -157,6 +157,7 @@ export function PresetSelector() {
             )}
           </div>
         </CardHeader>
+        ;
         <CardContent>
           {isLoadingPresets ? (
             <div className="flex justify-center py-8">
@@ -171,61 +172,110 @@ export function PresetSelector() {
               />
             </div>
           ) : (
-            <AnimatePresence>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {(showAllPresets ? presets : presets.slice(0, 3)).map(
-                  (preset, index) => (
-                    <motion.div
-                      key={preset.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{ duration: 0.3, delay: index * 0.1 }}
-                      whileHover={{ scale: 1.02, y: -2 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="h-full"
-                    >
-                      <Button
-                        variant={
+            <motion.div
+              layout // 👈 Ключ: анимирует высоту контейнера при изменении содержимого
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+            >
+              {/* Первые 3 карточки — всегда видны */}
+              {presets.slice(0, 3).map((preset, index) => (
+                <motion.div
+                  key={preset.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  layout
+                  className="h-full"
+                >
+                  <Button
+                    variant={
+                      selectedPreset?.id === preset.id ? "primary" : "outline"
+                    }
+                    size="sm"
+                    onClick={() => handlePresetSelect(preset)}
+                    className="text-left justify-start h-full py-4 px-4 w-full min-h-[80px]"
+                  >
+                    <div className="flex items-start space-x-3 w-full">
+                      <div
+                        className={`flex-shrink-0 ${
                           selectedPreset?.id === preset.id
-                            ? "primary"
-                            : "outline"
-                        }
-                        size="sm"
-                        onClick={() => handlePresetSelect(preset)}
-                        className="text-left justify-start h-full py-4 px-4 w-full min-h-[80px]"
+                            ? "text-white"
+                            : "text-slate-500"
+                        }`}
                       >
-                        <div className="flex items-start space-x-3 w-full">
+                        {preset.icon}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-sm truncate">
+                          {preset.name}
+                        </div>
+                        <div
+                          className={`text-xs mt-1 line-clamp-2 ${
+                            selectedPreset?.id === preset.id
+                              ? "text-white/80"
+                              : "text-slate-500"
+                          }`}
+                        >
+                          {preset.description}
+                        </div>
+                      </div>
+                    </div>
+                  </Button>
+                </motion.div>
+              ))}
+
+              {/* Остальные карточки — показываются при showAllPresets */}
+              {showAllPresets &&
+                presets.slice(3).map((preset, index) => (
+                  <motion.div
+                    key={preset.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                    whileHover={{ scale: 1.02, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    layout
+                    className="h-full"
+                  >
+                    <Button
+                      variant={
+                        selectedPreset?.id === preset.id ? "primary" : "outline"
+                      }
+                      size="sm"
+                      onClick={() => handlePresetSelect(preset)}
+                      className="text-left justify-start h-full py-4 px-4 w-full min-h-[80px]"
+                    >
+                      <div className="flex items-start space-x-3 w-full">
+                        <div
+                          className={`flex-shrink-0 ${
+                            selectedPreset?.id === preset.id
+                              ? "text-white"
+                              : "text-slate-500"
+                          }`}
+                        >
+                          {preset.icon}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-sm truncate">
+                            {preset.name}
+                          </div>
                           <div
-                            className={`flex-shrink-0 ${
+                            className={`text-xs mt-1 line-clamp-2 ${
                               selectedPreset?.id === preset.id
-                                ? "text-white"
+                                ? "text-white/80"
                                 : "text-slate-500"
                             }`}
                           >
-                            {preset.icon}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="font-semibold text-sm truncate">
-                              {preset.name}
-                            </div>
-                            <div
-                              className={`text-xs mt-1 line-clamp-2 ${
-                                selectedPreset?.id === preset.id
-                                  ? "text-white/80"
-                                  : "text-slate-500"
-                              }`}
-                            >
-                              {preset.description}
-                            </div>
+                            {preset.description}
                           </div>
                         </div>
-                      </Button>
-                    </motion.div>
-                  )
-                )}
-              </div>
-            </AnimatePresence>
+                      </div>
+                    </Button>
+                  </motion.div>
+                ))}
+            </motion.div>
           )}
         </CardContent>
       </Card>

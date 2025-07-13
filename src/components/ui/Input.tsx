@@ -48,7 +48,6 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               className
             )}
             ref={ref}
-            whileFocus={{ scale: 1.01 }}
             transition={{ duration: 0.1 }}
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             {...(props as any)}

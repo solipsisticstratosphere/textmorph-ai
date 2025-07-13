@@ -37,7 +37,6 @@ const parseMarkdown = (text: string): React.ReactElement => {
 
   let match;
   while ((match = markdownRegex.exec(text)) !== null) {
-    // Добавляем текст до найденного совпадения
     if (match.index > currentIndex) {
       parts.push(
         <span key={partIndex++}>
@@ -46,7 +45,6 @@ const parseMarkdown = (text: string): React.ReactElement => {
       );
     }
 
-    // Обрабатываем найденное совпадение
     if (match[1]) {
       // Жирный текст **text**
       parts.push(
@@ -89,7 +87,6 @@ const parseMarkdown = (text: string): React.ReactElement => {
     currentIndex = match.index + match[0].length;
   }
 
-  // Добавляем оставшийся текст
   if (currentIndex < text.length) {
     parts.push(<span key={partIndex++}>{text.substring(currentIndex)}</span>);
   }
@@ -152,10 +149,8 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       }
     };
 
-    // Показываем предпросмотр только если включен renderMarkdown и поле только для чтения
     const showPreview = renderMarkdown && readOnly;
 
-    // Если не превью, показываем кнопки переключения режимов
     const showToggleButtons = renderMarkdown && !readOnly;
 
     return (
@@ -202,7 +197,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         )}
 
         {/* Textarea или превью */}
-        {showPreview || (renderMarkdown && isPreview) ? (
+        {(showPreview && value) || (renderMarkdown && isPreview && value) ? (
           <motion.div
             className={cn(
               "w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm bg-white/80 backdrop-blur-sm overflow-y-auto",
@@ -215,10 +210,10 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
             transition={{ duration: 0.2 }}
             style={{
               height: props.rows
-                ? `${parseInt(props.rows.toString()) * 24}px`
+                ? `${parseInt(props.rows.toString()) * 28.5}px`
                 : "auto",
               maxHeight: props.rows
-                ? `${parseInt(props.rows.toString()) * 24}px`
+                ? `${parseInt(props.rows.toString()) * 28.5}px`
                 : "auto",
             }}
           >
@@ -239,14 +234,13 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
             value={internalValue}
             onChange={handleChange}
             readOnly={readOnly}
-            whileFocus={{ scale: 1.005 }}
             transition={{ duration: 0.1 }}
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             {...(props as any)}
           />
         )}
 
-        <div className="flex justify-between mt-2">
+        <div className="flex justify-between mt-2.5">
           {error && (
             <motion.p
               className="text-sm text-red-600 flex items-center"

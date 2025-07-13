@@ -12,6 +12,7 @@ import {
   getCharacterCount,
 } from "@/lib/utils";
 import type { Language } from "@/types";
+import { useTypewriter } from "react-simple-typewriter";
 
 interface OutputSectionProps {
   copySuccess: boolean;
@@ -32,6 +33,20 @@ export function OutputSection({
 
   const outputWordCount = getWordCount(outputText);
   const outputCharCount = getCharacterCount(outputText);
+  const [typedPlaceholder] = useTypewriter({
+    words: [
+      "Your transformed text will appear here...",
+      "Here will be the rewritten content...",
+      "Тут зʼявиться перетворений текст...",
+      "Здесь появится преобразованный текст...",
+      "Voici le texte transformé...",
+      "ここに変換されたテキストが表示されます...",
+    ],
+    loop: 0,
+    delaySpeed: 1500,
+    typeSpeed: 60,
+    deleteSpeed: 20,
+  });
 
   const handleCopy = useCallback(async () => {
     try {
@@ -91,7 +106,7 @@ export function OutputSection({
         <CardContent className="space-y-6">
           <div className="relative">
             <Textarea
-              placeholder="Your transformed text will appear here... ✨"
+              placeholder={outputText ? undefined : typedPlaceholder}
               value={outputText}
               readOnly
               rows={12}
