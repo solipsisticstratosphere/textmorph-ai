@@ -32,13 +32,11 @@ export async function downloadPDF(
   filename: string = "transformed-text"
 ): Promise<void> {
   try {
-    // Dynamic import to avoid SSR issues
     const { Document, Page, Text, pdf, StyleSheet } = await import(
       "@react-pdf/renderer"
     );
     const React = await import("react");
 
-    // Create styles
     const styles = StyleSheet.create({
       page: {
         flexDirection: "column",
@@ -51,13 +49,11 @@ export async function downloadPDF(
       },
     });
 
-    // Strip HTML tags if content comes from rich text editor
     const stripHtml = (html: string) => {
       const doc = new DOMParser().parseFromString(html, "text/html");
       return doc.body.textContent || "";
     };
 
-    // Create PDF document using React.createElement
     const MyDocument = () =>
       React.createElement(
         Document,
@@ -69,11 +65,9 @@ export async function downloadPDF(
         )
       );
 
-    // Generate PDF blob
     const pdfBlob = await pdf(React.createElement(MyDocument)).toBlob();
     const url = URL.createObjectURL(pdfBlob);
 
-    // Create download link
     const a = document.createElement("a");
     a.href = url;
     a.download = `${filename}.pdf`;

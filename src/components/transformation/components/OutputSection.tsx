@@ -5,12 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Textarea";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { useTransformationStore } from "@/lib/store";
-import {
-  copyToClipboard,
-  downloadText,
-  getWordCount,
-  getCharacterCount,
-} from "@/lib/utils";
+import { copyToClipboard, downloadText, getWordCount } from "@/lib/utils";
 import type { Language } from "@/types";
 import { useTypewriter } from "react-simple-typewriter";
 
@@ -20,6 +15,10 @@ interface OutputSectionProps {
   toggleDashboard: () => void;
   detectedLanguage: string | null;
   languages: Language[];
+}
+
+function pluralize(count: number, singular: string, plural: string) {
+  return `${count} ${count === 1 ? singular : plural}`;
 }
 
 export function OutputSection({
@@ -32,7 +31,7 @@ export function OutputSection({
   const { outputText, clearOutputText } = useTransformationStore();
 
   const outputWordCount = getWordCount(outputText);
-  const outputCharCount = getCharacterCount(outputText);
+  // const outputCharCount = getCharacterCount(outputText);
   const [typedPlaceholder] = useTypewriter({
     words: [
       "Your transformed text will appear here...",
@@ -53,9 +52,7 @@ export function OutputSection({
       await copyToClipboard(outputText);
       setCopySuccess(true);
       setTimeout(() => setCopySuccess(false), 2000);
-    } catch {
-      // Handle error if needed
-    }
+    } catch {}
   }, [outputText, setCopySuccess]);
 
   const handleDownload = useCallback(() => {
@@ -84,13 +81,12 @@ export function OutputSection({
       <Card variant="elevated" className="h-full">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
-            <span className="text-slate-800">Transformed Text</span>
+            <span className="text-slate-800">Transformed</span>
             {outputText && (
               <div className="flex items-center space-x-2 text-sm text-slate-500 font-normal">
                 <span>•</span>
-                <span>{outputWordCount} words</span>
-                <span>•</span>
-                <span>{outputCharCount} characters</span>
+                <span>{pluralize(outputWordCount, "word", "words")}</span>
+
                 {detectedLanguage && (
                   <>
                     <span>•</span>
@@ -150,11 +146,7 @@ export function OutputSection({
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <motion.div
-                  className="flex-1"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
+                <motion.div className="flex-1">
                   <Button
                     variant="secondary"
                     onClick={handleCopy}
@@ -164,10 +156,7 @@ export function OutputSection({
                     {copySuccess ? "Copied!" : "Copy"}
                   </Button>
                 </motion.div>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
+                <motion.div>
                   <Button
                     variant="outline"
                     onClick={handleDownload}
@@ -176,10 +165,7 @@ export function OutputSection({
                     <Download className="w-5 h-5" />
                   </Button>
                 </motion.div>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
+                <motion.div>
                   <Button
                     variant="primary"
                     onClick={toggleDashboard}

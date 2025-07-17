@@ -11,7 +11,8 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     | "outline"
     | "ghost"
     | "danger"
-    | "dashboard";
+    | "dashboard"
+    | "signin";
   size?: "sm" | "md" | "lg";
   isLoading?: boolean;
   children: React.ReactNode;
@@ -35,16 +36,18 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variants = {
       primary:
-        "bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:from-cyan-700 hover:to-blue-700 focus:ring-cyan-500 shadow-lg hover:shadow-xl border-none",
+        "bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:from-cyan-700 hover:to-blue-700 focus:ring-cyan-500 shadow-lg hover:shadow-xl border-none disabled:hover:from-cyan-600 disabled:hover:to-blue-600 disabled:hover:shadow-lg",
       secondary:
-        "bg-gradient-to-r from-teal-600 to-cyan-600 text-white hover:from-teal-700 hover:to-cyan-700 focus:ring-teal-500 shadow-lg hover:shadow-xl border border-teal-600/20",
+        "bg-gradient-to-r from-teal-600 to-cyan-600 text-white hover:from-teal-700 hover:to-cyan-700 focus:ring-teal-500 shadow-lg hover:shadow-xl border border-teal-600/20 disabled:hover:from-teal-600 disabled:hover:to-cyan-600 disabled:hover:shadow-lg",
       outline:
-        "border-2 border-slate-300 bg-white/80 backdrop-blur-sm text-slate-700 hover:bg-slate-50 hover:border-slate-400 focus:ring-cyan-500 shadow-sm hover:shadow-md",
+        "border-2 border-slate-300 bg-white/80 backdrop-blur-sm text-slate-700 hover:bg-slate-50 hover:border-slate-400 focus:ring-cyan-500 shadow-sm hover:shadow-md disabled:hover:bg-white/80 disabled:hover:border-slate-300 disabled:hover:shadow-sm",
       ghost: "text-slate-600 focus:ring-slate-500 bg-transparent",
       danger:
-        "bg-gradient-to-r from-red-600 to-pink-600 text-white hover:from-red-700 hover:to-pink-700 focus:ring-red-500 shadow-lg hover:shadow-xl border border-red-600/20",
+        "bg-gradient-to-r from-red-600 to-pink-600 text-white hover:from-red-700 hover:to-pink-700 focus:ring-red-500 shadow-lg hover:shadow-xl border border-red-600/20 disabled:hover:from-red-600 disabled:hover:to-pink-600 disabled:hover:shadow-lg",
       dashboard:
-        "bg-transparent text-white hover:from-cyan-700 hover:to-blue-700 focus:ring-cyan-500 shadow-lg hover:shadow-xl border border-cyan-600/20",
+        "bg-transparent text-white hover:from-cyan-700 hover:to-blue-700 focus:ring-cyan-500 shadow-lg hover:shadow-xl border border-cyan-600/20 disabled:hover:shadow-lg",
+      signin:
+        "text-slate-600 focus:ring-slate-500 bg-white/80 backdrop-blur-sm border border-slate-300 hover:bg-slate-50 hover:border-slate-400 focus:ring-cyan-500 shadow-sm hover:shadow-md disabled:hover:bg-white/80 disabled:hover:border-slate-300 disabled:hover:shadow-sm",
     };
 
     const sizes = {
@@ -55,29 +58,36 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     return (
       <motion.button
-        className={cn(baseStyles, variants[variant], sizes[size], className)}
+        className={cn(
+          baseStyles,
+          variants[variant],
+          sizes[size],
+          disabled && "cursor-not-allowed opacity-50",
+          className
+        )}
         ref={ref}
         disabled={disabled || isLoading}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
+        whileTap={!disabled && !isLoading ? { scale: 0.98 } : {}}
         transition={{ duration: 0.1 }}
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         {...(props as any)}
       >
         {/* Shimmer effect for primary and secondary buttons */}
-        {(variant === "primary" || variant === "secondary") && (
-          <motion.div
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-            initial={{ x: "-100%" }}
-            animate={{ x: "100%" }}
-            transition={{
-              duration: 2,
-              repeat: Number.POSITIVE_INFINITY,
-              repeatType: "loop",
-              ease: "linear",
-            }}
-          />
-        )}
+        {(variant === "primary" || variant === "secondary") &&
+          !disabled &&
+          !isLoading && (
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+              initial={{ x: "-100%" }}
+              animate={{ x: "100%" }}
+              transition={{
+                duration: 2,
+                repeat: Number.POSITIVE_INFINITY,
+                repeatType: "loop",
+                ease: "linear",
+              }}
+            />
+          )}
 
         {isLoading && (
           <motion.div

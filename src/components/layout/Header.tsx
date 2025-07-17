@@ -92,7 +92,7 @@ export function Header({ onMenuToggle, showMobileMenu = false }: HeaderProps) {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3, delay: 0.4 }}
             >
-              <Button variant="ghost" size="sm" className="font-medium">
+              <Button variant="signin" size="sm" className="font-medium">
                 Sign In
               </Button>
             </motion.div>
@@ -182,7 +182,7 @@ export function Header({ onMenuToggle, showMobileMenu = false }: HeaderProps) {
                     transition={{ duration: 0.2, delay: 0.4 }}
                   >
                     <Button
-                      variant="ghost"
+                      variant="signin"
                       size="sm"
                       className="justify-start font-medium"
                     >

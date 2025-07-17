@@ -150,7 +150,7 @@ export function PresetSelector() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowAllPresets(!showAllPresets)}
-                className="text-slate-600 hover:text-slate-800"
+                className="text-slate-600 hover:text-slate-800 !important:hover:scale-100"
               >
                 {showAllPresets ? "Show Less" : `Show All (${presets.length})`}
               </Button>
@@ -173,10 +173,9 @@ export function PresetSelector() {
             </div>
           ) : (
             <motion.div
-              layout // 👈 Ключ: анимирует высоту контейнера при изменении содержимого
+              layout
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
             >
-              {/* Первые 3 карточки — всегда видны */}
               {presets.slice(0, 3).map((preset, index) => (
                 <motion.div
                   key={preset.id}
@@ -225,7 +224,6 @@ export function PresetSelector() {
                 </motion.div>
               ))}
 
-              {/* Остальные карточки — показываются при showAllPresets */}
               {showAllPresets &&
                 presets.slice(3).map((preset, index) => (
                   <motion.div

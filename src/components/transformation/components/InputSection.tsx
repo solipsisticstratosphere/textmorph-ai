@@ -22,7 +22,9 @@ interface InputSectionProps {
   isLoading: boolean;
   setError: (error: string | null) => void;
 }
-
+function pluralize(count: number, singular: string, plural: string) {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
 export function InputSection({
   onTransform,
   isLoading,
@@ -54,7 +56,7 @@ export function InputSection({
       "Écris quelque chose d'intéressant...",
       "面白いことを書いてください...",
     ],
-    loop: 0, // 0 — бесконечно
+    loop: 0,
     typeSpeed: 50,
     deleteSpeed: 30,
     delaySpeed: 2000,
@@ -151,7 +153,7 @@ export function InputSection({
             <span className="text-slate-800">Input Text</span>
             <div className="flex items-center space-x-2 text-sm text-slate-500 font-normal">
               <span>•</span>
-              <span>{inputWordCount} words</span>
+              <span>{pluralize(inputWordCount, "word", "words")}</span>
               <span>•</span>
               <span>{inputCharCount} characters</span>
             </div>
@@ -273,7 +275,7 @@ export function InputSection({
               <select
                 value={selectedLanguage}
                 onChange={handleLanguageChange}
-                className="appearance-none flex-1 min-w-0 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 bg-white text-slate-700"
+                className="appearance-none cursor-pointer flex-1 min-w-0 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 bg-white text-slate-700"
                 disabled={isLoadingLanguages}
               >
                 {isLoadingLanguages ? (
@@ -289,11 +291,7 @@ export function InputSection({
             </div>
           </div>
           <div className="flex space-x-3">
-            <motion.div
-              className="flex-1"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
+            <motion.div className="flex-1">
               <Button
                 onClick={handleTransformClick}
                 disabled={!inputText.trim() || !instruction.trim() || isLoading}
@@ -304,7 +302,7 @@ export function InputSection({
                 {isLoading ? "Transforming..." : "Transform Text"}
               </Button>
             </motion.div>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <motion.div whileTap={{ scale: 0.95 }}>
               <Button
                 variant="outline"
                 onClick={handleClear}

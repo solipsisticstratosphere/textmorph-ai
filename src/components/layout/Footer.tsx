@@ -1,8 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Github, Twitter, Mail, Heart } from "lucide-react";
-import Image from "next/image";
+import { Heart } from "lucide-react";
+// import Image from "next/image";
 
 export function Footer() {
   return (
@@ -20,9 +20,9 @@ export function Footer() {
       animate="visible"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Brand */}
-          <motion.div
+        {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-8"> */}
+        {/* Brand */}
+        {/* <motion.div
             className="col-span-1 md:col-span-2"
             variants={{
               hidden: { opacity: 0, y: 20 },
@@ -84,10 +84,10 @@ export function Footer() {
                 </motion.a>
               ))}
             </div>
-          </motion.div>
+          </motion.div> */}
 
-          {/* Product */}
-          <motion.div
+        {/* Product */}
+        {/* <motion.div
             variants={{
               hidden: { opacity: 0, y: 20 },
               visible: {
@@ -120,10 +120,10 @@ export function Footer() {
                 )
               )}
             </ul>
-          </motion.div>
+          </motion.div> */}
 
-          {/* Support */}
-          <motion.div
+        {/* Support */}
+        {/* <motion.div
             variants={{
               hidden: { opacity: 0, y: 20 },
               visible: {
@@ -157,10 +157,10 @@ export function Footer() {
               )}
             </ul>
           </motion.div>
-        </div>
+        </div> */}
 
         <motion.div
-          className="mt-12 pt-8 border-t border-slate-200/50"
+          className=""
           variants={{
             hidden: { opacity: 0, y: 20 },
             visible: {
@@ -172,7 +172,7 @@ export function Footer() {
         >
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-2 text-slate-600 text-sm">
-              <span>© 2025 TextMorph AI. Made with</span>
+              <span>© {new Date().getFullYear()} TextMorph AI. Made with</span>
               <motion.div
                 animate={{ scale: [1, 1.2, 1] }}
                 transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY }}
@@ -187,13 +187,25 @@ export function Footer() {
                   <motion.a
                     key={item}
                     href="#"
-                    className="text-slate-600 hover:text-slate-800 text-sm transition-colors duration-200"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.1 }}
-                    whileHover={{ y: -2 }}
+                    className="group relative text-slate-600 hover:text-slate-800 text-sm transition-colors duration-300"
+                    initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{
+                      duration: 0.5,
+                      ease: "easeOut",
+                      delay: index * 0.15,
+                    }}
+                    whileHover={{
+                      transition: {
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 20,
+                      },
+                    }}
                   >
                     {item}
+                    {/* underline effect */}
+                    <span className="absolute left-0 -bottom-1 h-[2px] w-0 bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-300 group-hover:w-full" />
                   </motion.a>
                 )
               )}
