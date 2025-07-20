@@ -94,16 +94,13 @@ export class AIService {
       let transformedText: string;
       let modelUsed: string;
 
-      // Detect input language
       const detectedLanguage = this.detectLanguage(request.input_text);
 
-      // Determine target language
       const targetLanguage =
         request.target_language === "auto" || !request.target_language
           ? detectedLanguage
           : request.target_language;
 
-      // Use Moonshot API if key is available
       if (this.moonshotKey) {
         transformedText = await this.callMoonshotAPI(
           request.input_text,
@@ -112,9 +109,8 @@ export class AIService {
           targetLanguage,
           detectedLanguage
         );
-        modelUsed = "moonshot-v1-8k";
+        modelUsed = "moonshot-v1-32k";
       } else {
-        // Fallback to mock transformation
         transformedText = await this.mockTransformation(
           request.input_text,
           request.transformation_instruction,
@@ -160,7 +156,6 @@ export class AIService {
       throw new Error("Moonshot API key not configured");
     }
 
-    // Build the instruction for combined transformation and translation
     const formattedInstruction = this.buildCombinedInstruction(
       instruction,
       targetLanguage,

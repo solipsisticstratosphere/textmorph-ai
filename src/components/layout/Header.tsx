@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import Image from "next/image";
+import Link from "next/link";
 
 interface HeaderProps {
   onMenuToggle?: () => void;
@@ -32,18 +33,20 @@ export function Header({ onMenuToggle, showMobileMenu = false }: HeaderProps) {
             className="flex items-center space-x-3"
             whileHover="hover"
           >
-            <motion.div
-              className="flex items-center justify-center w-10 h-10  shadow-lg overflow-hidden"
-              variants={{
-                hover: {
-                  scale: 1.05,
-                  rotate: 5,
-                  transition: { duration: 0.2, ease: "easeOut" },
-                },
-              }}
-            >
-              <Image src="/logo.svg" alt="Logo" width={40} height={40} />
-            </motion.div>
+            <Link href="/" passHref>
+              <motion.div
+                className="flex items-center justify-center w-10 h-10  shadow-lg overflow-hidden"
+                variants={{
+                  hover: {
+                    scale: 1.05,
+                    rotate: 5,
+                    transition: { duration: 0.2, ease: "easeOut" },
+                  },
+                }}
+              >
+                <Image src="/logo.svg" alt="Logo" width={40} height={40} />
+              </motion.div>
+            </Link>
             <div className="flex flex-col">
               <span className="text-xl font-bold bg-gradient-to-r from-cyan-600 via-blue-600 to-teal-600 bg-clip-text text-transparent">
                 TextMorph
@@ -92,22 +95,26 @@ export function Header({ onMenuToggle, showMobileMenu = false }: HeaderProps) {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3, delay: 0.4 }}
             >
-              <Button variant="signin" size="sm" className="font-medium">
-                Sign In
-              </Button>
+              <Link href="/login" passHref>
+                <Button variant="signin" size="sm" className="font-medium">
+                  Sign In
+                </Button>
+              </Link>
             </motion.div>
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3, delay: 0.5 }}
             >
-              <Button
-                variant="primary"
-                size="sm"
-                className="font-medium shadow-lg hover:shadow-xl"
-              >
-                Get Started
-              </Button>
+              <Link href="/register" passHref>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  className="font-medium shadow-lg hover:shadow-xl"
+                >
+                  Get Started
+                </Button>
+              </Link>
             </motion.div>
           </div>
 
@@ -181,26 +188,30 @@ export function Header({ onMenuToggle, showMobileMenu = false }: HeaderProps) {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.2, delay: 0.4 }}
                   >
-                    <Button
-                      variant="signin"
-                      size="sm"
-                      className="justify-start font-medium"
-                    >
-                      Sign In
-                    </Button>
+                    <Link href="/login" passHref>
+                      <Button
+                        variant="signin"
+                        size="sm"
+                        className="justify-start font-medium"
+                      >
+                        Sign In
+                      </Button>
+                    </Link>
                   </motion.div>
                   <motion.div
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.2, delay: 0.5 }}
                   >
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      className="font-medium shadow-lg"
-                    >
-                      Get Started
-                    </Button>
+                    <Link href="/register" passHref>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        className="font-medium shadow-lg"
+                      >
+                        Get Started
+                      </Button>
+                    </Link>
                   </motion.div>
                 </div>
               </nav>

@@ -2,7 +2,13 @@
 
 import { motion } from "framer-motion";
 import { Heart } from "lucide-react";
+import Link from "next/link";
 // import Image from "next/image";
+const links = [
+  { name: "Privacy Policy", href: "/privacy" },
+  { name: "Terms of Service", href: "/terms" },
+  { name: "Cookie Policy", href: "/cookies" },
+];
 
 export function Footer() {
   return (
@@ -182,11 +188,9 @@ export function Footer() {
               <span>for better writing.</span>
             </div>
             <div className="flex space-x-6 mt-4 md:mt-0">
-              {["Privacy Policy", "Terms of Service", "Cookie Policy"].map(
-                (item, index) => (
+              {links.map((link, index) => (
+                <Link href={link.href} key={link.name} passHref>
                   <motion.a
-                    key={item}
-                    href="#"
                     className="group relative text-slate-600 hover:text-slate-800 text-sm transition-colors duration-300"
                     initial={{ opacity: 0, y: 20, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -203,12 +207,12 @@ export function Footer() {
                       },
                     }}
                   >
-                    {item}
+                    {link.name}
                     {/* underline effect */}
                     <span className="absolute left-0 -bottom-1 h-[2px] w-0 bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-300 group-hover:w-full" />
                   </motion.a>
-                )
-              )}
+                </Link>
+              ))}
             </div>
           </div>
         </motion.div>

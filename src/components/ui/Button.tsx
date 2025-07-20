@@ -47,7 +47,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       dashboard:
         "bg-transparent text-white hover:from-cyan-700 hover:to-blue-700 focus:ring-cyan-500 shadow-lg hover:shadow-xl border border-cyan-600/20 disabled:hover:shadow-lg",
       signin:
-        "text-slate-600 focus:ring-slate-500 bg-white/80 backdrop-blur-sm border border-slate-300 hover:bg-slate-50 hover:border-slate-400 focus:ring-cyan-500 shadow-sm hover:shadow-md disabled:hover:bg-white/80 disabled:hover:border-slate-300 disabled:hover:shadow-sm",
+        "text-slate-600 focus:ring-slate-500 bg-white/80 backdrop-blur-sm  hover:bg-slate-50 hover:border-slate-400 focus:ring-cyan-500  hover:shadow-md disabled:hover:bg-white/80 disabled:hover:border-slate-300 disabled:hover:shadow-sm",
     };
 
     const sizes = {
