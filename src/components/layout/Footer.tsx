@@ -189,29 +189,32 @@ export function Footer() {
             </div>
             <div className="flex space-x-6 mt-4 md:mt-0">
               {links.map((link, index) => (
-                <Link href={link.href} key={link.name} passHref>
-                  <motion.a
+                <motion.div
+                  key={link.name}
+                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{
+                    duration: 0.5,
+                    ease: "easeOut",
+                    delay: index * 0.15,
+                  }}
+                  whileHover={{
+                    transition: {
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 20,
+                    },
+                  }}
+                >
+                  <Link
+                    href={link.href}
                     className="group relative text-slate-600 hover:text-slate-800 text-sm transition-colors duration-300"
-                    initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{
-                      duration: 0.5,
-                      ease: "easeOut",
-                      delay: index * 0.15,
-                    }}
-                    whileHover={{
-                      transition: {
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 20,
-                      },
-                    }}
                   >
                     {link.name}
                     {/* underline effect */}
                     <span className="absolute left-0 -bottom-1 h-[2px] w-0 bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-300 group-hover:w-full" />
-                  </motion.a>
-                </Link>
+                  </Link>
+                </motion.div>
               ))}
             </div>
           </div>

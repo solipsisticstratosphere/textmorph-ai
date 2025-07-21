@@ -33,28 +33,28 @@ export function Header({ onMenuToggle, showMobileMenu = false }: HeaderProps) {
             className="flex items-center space-x-3"
             whileHover="hover"
           >
-            <Link href="/" passHref>
+            <Link
+              href="/"
+              className="flex items-center space-x-2 group no-underline"
+            >
               <motion.div
-                className="flex items-center justify-center w-10 h-10  shadow-lg overflow-hidden"
-                variants={{
-                  hover: {
-                    scale: 1.05,
-                    rotate: 5,
-                    transition: { duration: 0.2, ease: "easeOut" },
-                  },
+                className="flex items-center justify-center w-10 h-10 shadow-lg overflow-hidden"
+                whileHover={{
+                  scale: 1.05,
+                  transition: { duration: 0.2, ease: "easeOut" },
                 }}
               >
                 <Image src="/logo.svg" alt="Logo" width={40} height={40} />
               </motion.div>
+              <div className="flex flex-col">
+                <span className="text-xl font-bold bg-gradient-to-r from-cyan-600 via-blue-600 to-teal-600 bg-clip-text text-transparent">
+                  TextMorph
+                </span>
+                <span className="text-xs text-slate-500 -mt-1 font-medium">
+                  AI
+                </span>
+              </div>
             </Link>
-            <div className="flex flex-col">
-              <span className="text-xl font-bold bg-gradient-to-r from-cyan-600 via-blue-600 to-teal-600 bg-clip-text text-transparent">
-                TextMorph
-              </span>
-              <span className="text-xs text-slate-500 -mt-1 font-medium">
-                AI
-              </span>
-            </div>
           </motion.div>
 
           {/* Desktop Navigation */}
