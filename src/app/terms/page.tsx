@@ -10,8 +10,6 @@ import {
   Shield,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -195,7 +193,6 @@ export default function TermsOfServicePage() {
         transition={{ duration: 0.5, ease: "easeOut" }}
         className="relative z-10 flex flex-col min-h-screen"
       >
-        <Header />
         <main className="flex-grow py-12 px-4 sm:px-6 lg:px-8">
           <motion.div
             className="max-w-4xl mx-auto"
@@ -377,7 +374,6 @@ export default function TermsOfServicePage() {
             </motion.div>
           </motion.div>
         </main>
-        <Footer />
       </motion.div>
     </motion.div>
   );

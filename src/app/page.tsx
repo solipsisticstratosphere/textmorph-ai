@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+// import { useState } from "react";
 import { motion } from "framer-motion";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
+
 import { TransformationInterface } from "@/components/transformation/TransformationInterface";
 
 const pageVariants = {
@@ -13,12 +12,6 @@ const pageVariants = {
 };
 
 export default function HomePage() {
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
-
-  const handleMenuToggle = () => {
-    setShowMobileMenu(!showMobileMenu);
-  };
-
   return (
     <motion.div
       className="min-h-screen flex flex-col relative overflow-hidden"
@@ -89,14 +82,9 @@ export default function HomePage() {
         transition={{ duration: 0.5, ease: "easeOut" }}
         className="relative z-10"
       >
-        <Header
-          onMenuToggle={handleMenuToggle}
-          showMobileMenu={showMobileMenu}
-        />
         <main className="flex-1">
           <TransformationInterface />
         </main>
-        <Footer />
       </motion.div>
     </motion.div>
   );

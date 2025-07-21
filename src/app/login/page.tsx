@@ -9,8 +9,6 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import Link from "next/link";
 import { Eye, EyeOff, Mail, Lock, LogIn } from "lucide-react";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -129,7 +127,6 @@ export default function LoginPage() {
         transition={{ duration: 0.5, ease: "easeOut" }}
         className="relative z-10 flex flex-col min-h-screen"
       >
-        <Header />
         <main className="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
           <motion.div
             className="max-w-md w-full"
@@ -466,7 +463,6 @@ export default function LoginPage() {
             </Card>
           </motion.div>
         </main>
-        <Footer />
       </motion.div>
     </motion.div>
   );

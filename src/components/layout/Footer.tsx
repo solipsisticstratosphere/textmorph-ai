@@ -13,7 +13,7 @@ const links = [
 export function Footer() {
   return (
     <motion.footer
-      className="bg-white/80 backdrop-blur-sm border-t border-slate-200/50"
+      className="bg-white backdrop-blur-sm border-t border-slate-200/50"
       variants={{
         hidden: { opacity: 0, y: 50 },
         visible: {

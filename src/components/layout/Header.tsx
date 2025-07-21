@@ -14,7 +14,7 @@ interface HeaderProps {
 export function Header({ onMenuToggle, showMobileMenu = false }: HeaderProps) {
   return (
     <motion.header
-      className="bg-white/80 backdrop-blur-xl sticky top-0 z-50 border-b border-white/20 shadow-sm"
+      className="bg-white backdrop-blur-xl sticky top-0 z-50 border-b border-white/20 shadow-sm"
       variants={{
         hidden: { y: -100, opacity: 0 },
         visible: {

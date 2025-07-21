@@ -14,7 +14,7 @@ const containerVariants = {
   },
 };
 
-export function Loading() {
+export default function Loading() {
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden">
       {/* Animated Background */}
@@ -270,5 +270,3 @@ export function Loading() {
     </div>
   );
 }
-
-export default Loading;

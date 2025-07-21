@@ -2,6 +2,7 @@ import type React from "react";
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import RootLayoutClient from "@/components/layout/RootLayoutClient";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -61,7 +62,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
-      <body className={`${inter.className} antialiased`}>{children}</body>
+      <body
+        className={`${inter.className} antialiased flex flex-col min-h-screen`}
+      >
+        <RootLayoutClient>{children}</RootLayoutClient>
+      </body>
     </html>
   );
 }
