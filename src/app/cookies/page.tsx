@@ -518,7 +518,7 @@ export default function CookiePolicyPage() {
                     </div>
                     <div className="hidden sm:block w-px h-4 bg-slate-300" />
                     <div className="text-slate-600">
-                      <span>We&apos;ll respond within 24 hours</span>
+                      <span>We&apos;ll respond within 48 hours</span>
                     </div>
                   </div>
                 </CardContent>
