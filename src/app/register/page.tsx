@@ -8,7 +8,16 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import Link from "next/link";
-import { Eye, EyeOff, Mail, Lock, UserPlus, Check, X } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  UserPlus,
+  Check,
+  X,
+  User,
+} from "lucide-react";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -45,6 +54,7 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [name, setName] = useState("");
 
   const validatePassword = (pwd: string) => {
     const newErrors: { [key: string]: string } = {};
@@ -72,6 +82,10 @@ export default function RegisterPage() {
       newErrors.email = "Please enter a valid email address.";
     }
 
+    if (!name) {
+      newErrors.name = "Name is required.";
+    }
+
     if (password !== confirmPassword) {
       newErrors.confirmPassword = "Passwords do not match.";
     }
@@ -82,12 +96,33 @@ export default function RegisterPage() {
       return;
     }
 
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Registration submitted:", { email, password });
-      setErrors({});
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password, name }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setErrors({
+          form: data.error || "Registration failed. Please try again.",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Registration error:", error);
+      setErrors({
+        form: "An error occurred during registration. Please try again.",
+      });
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   const getPasswordStrength = () => {
@@ -216,6 +251,17 @@ export default function RegisterPage() {
                   </p>
                 </motion.div>
 
+                {/* Form Error Message */}
+                {errors.form && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md"
+                  >
+                    {errors.form}
+                  </motion.div>
+                )}
+
                 {/* Form */}
                 <motion.form
                   onSubmit={handleSubmit}
@@ -232,6 +278,41 @@ export default function RegisterPage() {
                     },
                   }}
                 >
+                  <motion.div
+                    variants={{
+                      hidden: { opacity: 0, y: 20 },
+                      visible: {
+                        opacity: 1,
+                        y: 0,
+                        transition: {
+                          duration: 0.5,
+                          ease: "easeOut",
+                        },
+                      },
+                    }}
+                  >
+                    <Input
+                      label="Full Name"
+                      id="name"
+                      name="name"
+                      type="text"
+                      autoComplete="name"
+                      required
+                      placeholder="John Doe"
+                      value={name}
+                      onChange={(e) => {
+                        setName(e.target.value);
+                        setErrors((prev) => {
+                          const newErrors = { ...prev };
+                          delete newErrors.name;
+                          return newErrors;
+                        });
+                      }}
+                      error={errors.name}
+                      leftIcon={<User className="w-4 h-4" />}
+                    />
+                  </motion.div>
+
                   <motion.div
                     variants={{
                       hidden: { opacity: 0, y: 20 },

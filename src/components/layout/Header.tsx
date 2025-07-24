@@ -1,10 +1,12 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import Image from "next/image";
 import Link from "next/link";
+import { useAuth } from "@/lib/auth-context";
+import { useState, useRef, useEffect } from "react";
 
 interface HeaderProps {
   onMenuToggle?: () => void;
@@ -12,6 +14,35 @@ interface HeaderProps {
 }
 
 export function Header({ onMenuToggle, showMobileMenu = false }: HeaderProps) {
+  const { user, logout, isLoading } = useAuth();
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  const handleLogout = async () => {
+    await logout();
+    setShowUserMenu(false);
+  };
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target as Node)
+      ) {
+        setShowUserMenu(false);
+      }
+    };
+
+    if (showUserMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showUserMenu]);
+
   return (
     <motion.header
       className="bg-white backdrop-blur-xl sticky top-0 z-50 border-b border-white/20 shadow-sm"
@@ -90,32 +121,105 @@ export function Header({ onMenuToggle, showMobileMenu = false }: HeaderProps) {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-3">
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: 0.4 }}
-            >
-              <Link href="/login" passHref>
-                <Button variant="signin" size="sm" className="font-medium">
-                  Sign In
-                </Button>
-              </Link>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: 0.5 }}
-            >
-              <Link href="/register" passHref>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  className="font-medium shadow-lg hover:shadow-xl"
+            {isLoading ? (
+              <div className="h-8 w-24 bg-slate-200 animate-pulse rounded-md"></div>
+            ) : user ? (
+              <div className="relative" ref={userMenuRef}>
+                <motion.div
+                  className="flex items-center space-x-3 cursor-pointer p-2 rounded-xl hover:bg-slate-50 transition-colors duration-200 border border-transparent hover:border-slate-200"
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  Get Started
-                </Button>
-              </Link>
-            </motion.div>
+                  <div className="w-9 h-9 bg-gradient-to-br from-cyan-500 via-blue-500 to-teal-500 rounded-full flex items-center justify-center text-white shadow-md">
+                    <User className="w-4 h-4" />
+                  </div>
+                  <div className="flex flex-col items-start">
+                    <span className="font-semibold text-slate-800 text-sm leading-tight">
+                      {user.name}
+                    </span>
+                    {user.isPro && (
+                      <span className="inline-block px-1.5 py-0.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs rounded-md font-medium">
+                        PRO
+                      </span>
+                    )}
+                  </div>
+                </motion.div>
+
+                <AnimatePresence>
+                  {showUserMenu && (
+                    <motion.div
+                      className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden backdrop-blur-sm"
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                    >
+                      <div className="p-4 bg-gradient-to-br from-slate-50 to-white border-b border-slate-100">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 via-blue-500 to-teal-500 rounded-full flex items-center justify-center text-white shadow-lg">
+                            <User className="w-5 h-5" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-slate-800 truncate">
+                              {user.name}
+                            </p>
+                            <p className="text-xs text-slate-500 truncate">
+                              {user.email}
+                            </p>
+                            {user.isPro && (
+                              <span className="inline-block mt-1.5 px-2 py-1 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs rounded-full font-medium shadow-sm">
+                                ✨ PRO Member
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="p-2">
+                        <motion.button
+                          onClick={handleLogout}
+                          className="w-full flex items-center space-x-3 p-3 text-left text-sm text-slate-700 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors duration-200 group"
+                          whileHover={{ x: 2 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <LogOut className="w-4 h-4 group-hover:text-red-500" />
+                          <span className="font-medium">Sign out</span>
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <>
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: 0.4 }}
+                >
+                  <Link href="/login" passHref>
+                    <Button variant="ghost" size="sm" className="font-medium">
+                      Sign In
+                    </Button>
+                  </Link>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: 0.5 }}
+                >
+                  <Link href="/register" passHref>
+                    <Button
+                      className="font-medium shadow-lg hover:shadow-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700"
+                      size="sm"
+                    >
+                      Get Started
+                    </Button>
+                  </Link>
+                </motion.div>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -183,36 +287,79 @@ export function Header({ onMenuToggle, showMobileMenu = false }: HeaderProps) {
                   )
                 )}
                 <div className="flex flex-col space-y-3 pt-4 border-t border-white/20">
-                  <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.2, delay: 0.4 }}
-                  >
-                    <Link href="/login" passHref>
-                      <Button
-                        variant="signin"
-                        size="sm"
-                        className="justify-start font-medium"
+                  {isLoading ? (
+                    <div className="h-8 w-full bg-slate-200 animate-pulse rounded-md"></div>
+                  ) : user ? (
+                    <>
+                      <div className="p-4 bg-gradient-to-br from-slate-50 to-white rounded-xl border border-slate-200">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 via-blue-500 to-teal-500 rounded-full flex items-center justify-center text-white shadow-md">
+                            <User className="w-5 h-5" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-slate-800 truncate">
+                              {user.name}
+                            </p>
+                            <p className="text-sm text-slate-500 truncate">
+                              {user.email}
+                            </p>
+                          </div>
+                        </div>
+                        {user.isPro && (
+                          <span className="inline-block mt-3 px-2 py-1 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs rounded-full font-medium">
+                            ✨ PRO Member
+                          </span>
+                        )}
+                      </div>
+                      <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.2 }}
                       >
-                        Sign In
-                      </Button>
-                    </Link>
-                  </motion.div>
-                  <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.2, delay: 0.5 }}
-                  >
-                    <Link href="/register" passHref>
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        className="font-medium shadow-lg"
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="justify-start font-medium w-full hover:bg-red-50 hover:text-red-600 hover:border-red-200 bg-transparent"
+                          onClick={handleLogout}
+                        >
+                          <LogOut className="w-4 h-4 mr-2" />
+                          Sign Out
+                        </Button>
+                      </motion.div>
+                    </>
+                  ) : (
+                    <>
+                      <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.2, delay: 0.4 }}
                       >
-                        Get Started
-                      </Button>
-                    </Link>
-                  </motion.div>
+                        <Link href="/login" passHref>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="justify-start font-medium w-full"
+                          >
+                            Sign In
+                          </Button>
+                        </Link>
+                      </motion.div>
+                      <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.2, delay: 0.5 }}
+                      >
+                        <Link href="/register" passHref>
+                          <Button
+                            className="font-medium shadow-lg w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700"
+                            size="sm"
+                          >
+                            Get Started
+                          </Button>
+                        </Link>
+                      </motion.div>
+                    </>
+                  )}
                 </div>
               </nav>
             </motion.div>

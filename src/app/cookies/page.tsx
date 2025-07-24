@@ -97,7 +97,6 @@ export default function CookiePolicyPage() {
 
   const handleSaveSettings = () => {
     console.log("Cookie settings saved:", cookieSettings);
-    // Here you would typically save to localStorage or send to your backend
   };
 
   const handleAcceptAll = () => {

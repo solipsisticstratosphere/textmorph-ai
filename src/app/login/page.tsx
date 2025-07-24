@@ -50,12 +50,31 @@ export default function LoginPage() {
       return;
     }
 
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Login submitted:", { email, password });
-      setErrors({});
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setErrors({ form: data.error || "Login failed. Please try again." });
+        setIsLoading(false);
+        return;
+      }
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const from = urlParams.get("from") || "/";
+      window.location.href = from;
+    } catch (error) {
+      console.error("Login error:", error);
+      setErrors({ form: "An error occurred during login. Please try again." });
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -167,6 +186,17 @@ export default function LoginPage() {
                     Sign in to continue your text transformation journey
                   </p>
                 </motion.div>
+
+                {/* Form Error Message */}
+                {errors.form && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md"
+                  >
+                    {errors.form}
+                  </motion.div>
+                )}
 
                 {/* Form */}
                 <motion.form

@@ -242,13 +242,13 @@ a {
 }
 
 ::selection {
-  background: rgba(8, 145, 178, 0.2);
-  color: var(--foreground);
+  background: #0ea5e9; /* sky-500 */
+  color: white;
 }
 
 ::-moz-selection {
-  background: rgba(8, 145, 178, 0.2);
-  color: var(--foreground);
+  background: #0ea5e9; /* sky-500 */
+  color: white;
 }
 
 /* Focus Ring */

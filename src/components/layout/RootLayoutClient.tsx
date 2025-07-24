@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { AuthProvider } from "@/lib/auth-context";
 
 export default function RootLayoutClient({
   children,
@@ -16,10 +17,10 @@ export default function RootLayoutClient({
   };
 
   return (
-    <>
+    <AuthProvider>
       <Header onMenuToggle={handleMenuToggle} showMobileMenu={showMobileMenu} />
       <main className="flex-grow">{children}</main>
       <Footer />
-    </>
+    </AuthProvider>
   );
 }
