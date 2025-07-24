@@ -7,14 +7,11 @@ import {
   setAuthCookies,
 } from "@/lib/auth";
 
-export const runtime = "nodejs";
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { email, password } = body;
 
-    // Validate input
     if (!email || !password) {
       return NextResponse.json(
         { error: "Email and password are required" },
@@ -22,22 +19,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find user
-    let user;
-    try {
-      user = await prisma.user.findUnique({
-        where: { email },
-      });
-    } catch (dbError) {
-      console.error("Database error finding user:", dbError);
-      return NextResponse.json(
-        {
-          error: "Database connection error",
-          details: dbError instanceof Error ? dbError.message : String(dbError),
-        },
-        { status: 500 }
-      );
-    }
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
 
     if (!user) {
       return NextResponse.json(
@@ -46,24 +30,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify password
-    let isPasswordValid;
-    try {
-      isPasswordValid = await verifyPassword(password, user.password);
-    } catch (passwordError) {
-      console.error("Password verification error:", passwordError);
-      return NextResponse.json(
-        {
-          error: "Password verification error",
-          details:
-            passwordError instanceof Error
-              ? passwordError.message
-              : String(passwordError),
-        },
-        { status: 500 }
-      );
-    }
-
+    const isPasswordValid = await verifyPassword(password, user.password);
     if (!isPasswordValid) {
       return NextResponse.json(
         { error: "Invalid email or password" },
@@ -71,7 +38,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate tokens
     const userData = {
       id: user.id,
       email: user.email,
@@ -79,25 +45,9 @@ export async function POST(request: NextRequest) {
       isPro: user.isPro,
     };
 
-    let accessToken, refreshToken;
-    try {
-      accessToken = await generateAccessToken(userData);
-      refreshToken = await createSession(user.id);
-    } catch (tokenError) {
-      console.error("Token generation error:", tokenError);
-      return NextResponse.json(
-        {
-          error: "Token generation error",
-          details:
-            tokenError instanceof Error
-              ? tokenError.message
-              : String(tokenError),
-        },
-        { status: 500 }
-      );
-    }
+    const accessToken = await generateAccessToken(userData);
+    const refreshToken = await createSession(user.id);
 
-    // Create response
     const response = NextResponse.json(
       {
         message: "Login successful",
@@ -106,32 +56,13 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
 
-    // Set cookies
-    try {
-      setAuthCookies(response, accessToken, refreshToken);
-    } catch (cookieError) {
-      console.error("Cookie setting error:", cookieError);
-      return NextResponse.json(
-        {
-          error: "Cookie setting error",
-          details:
-            cookieError instanceof Error
-              ? cookieError.message
-              : String(cookieError),
-        },
-        { status: 500 }
-      );
-    }
+    setAuthCookies(response, accessToken, refreshToken);
 
     return response;
   } catch (error) {
     console.error("Login error:", error);
     return NextResponse.json(
-      {
-        error: "An error occurred during login",
-        details: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-      },
+      { error: "An error occurred during login" },
       { status: 500 }
     );
   }

@@ -6,8 +6,6 @@ import {
   setAuthCookies,
 } from "@/lib/auth";
 
-export const runtime = "nodejs";
-
 export async function POST(request: NextRequest) {
   try {
     const refreshToken = request.cookies.get("refreshToken")?.value;
