@@ -7,6 +7,7 @@ import {
   Globe,
   Trash2,
   PencilLine,
+  Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Textarea";
@@ -212,9 +213,23 @@ export function InputSection({
           <div className="grid grid-cols-1 gap-4">
             <div className="flex items-center space-x-3 bg-slate-50 p-3 rounded-lg">
               <Thermometer className="w-5 h-5 text-slate-500 flex-shrink-0" />
-              <span className="text-sm text-slate-700 whitespace-nowrap min-w-[120px]">
+              <span className="text-sm text-slate-700 whitespace-nowrap min-w-[120px] flex items-center">
                 Temperature: {temperature.toFixed(1)}
+                <div className="relative ml-1 group">
+                  <Info className="w-4 h-4 text-slate-400 cursor-help" />
+                  <div
+                    className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 
+                    max-w-72 w-max p-2 bg-slate-800 text-white text-xs rounded shadow-lg 
+                    opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none 
+                    break-words whitespace-normal overflow-hidden"
+                  >
+                    Controls the randomness of the text transformation. Lower
+                    values produce more predictable results, while higher values
+                    create more creative and varied outputs.
+                  </div>
+                </div>
               </span>
+
               <div className="flex-1 relative h-6 bg-gray-200 rounded-full overflow-hidden">
                 {/* Жидкость с волновым эффектом */}
                 <div
@@ -269,8 +284,21 @@ export function InputSection({
 
             <div className="flex items-center space-x-3 bg-slate-50 p-3 rounded-lg">
               <Globe className="w-5 h-5 text-slate-500 flex-shrink-0" />
-              <span className="text-sm text-slate-700 whitespace-nowrap min-w-[120px]">
+              <span className="text-sm text-slate-700 whitespace-nowrap min-w-[120px] flex items-center">
                 Output Language:
+                <div className="relative ml-1 group">
+                  <Info className="w-4 h-4 text-slate-400 cursor-help" />
+                  <div
+                    className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 
+                    max-w-72 w-max p-2 bg-slate-800 text-white text-xs rounded shadow-lg 
+                    opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none 
+                    break-words whitespace-normal overflow-hidden"
+                  >
+                    Specifies the language for the transformed output text.
+                    Select &quot;Auto-detect&quot; to maintain the original
+                    text&apos;s language.
+                  </div>
+                </div>
               </span>
               <select
                 value={selectedLanguage}
