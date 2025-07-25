@@ -148,6 +148,7 @@ export function TextDashboard({ isOpen, onClose }: TextDashboardProps) {
   );
 
   const handleViewModeSelection = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     (e: React.MouseEvent) => {
       if (!isEditing) return;
 
@@ -718,7 +719,9 @@ export function TextDashboard({ isOpen, onClose }: TextDashboardProps) {
             className="prose prose-lg max-w-none text-slate-800 min-h-[60vh] p-4 relative cursor-text"
             ref={viewContainerRef}
             onMouseUp={handleViewModeSelection}
-            onTouchEnd={handleViewModeSelection}
+            onTouchEnd={(e: React.TouchEvent<HTMLDivElement>) =>
+              handleViewModeSelection(e as unknown as React.MouseEvent)
+            }
             style={{ userSelect: "text" }}
           >
             {formatTextForDisplay(editableText)}
