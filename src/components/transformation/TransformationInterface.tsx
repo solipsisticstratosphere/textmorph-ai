@@ -74,8 +74,23 @@ export function TransformationInterface() {
     if (!showDashboard && outputText && editableText === "") {
       setEditableText(outputText);
     }
+
+
+    if (!showDashboard) {
+  
+      const { setTextSelection } = useTransformationStore.getState();
+      setTextSelection("", -1, -1);
+    }
+
     setShowDashboard(!showDashboard);
   }, [showDashboard, outputText, editableText, setEditableText]);
+
+
+  useEffect(() => {
+    if (!showDashboard && editableText && editableText !== outputText) {
+      setOutputText(editableText);
+    }
+  }, [showDashboard, editableText, outputText, setOutputText]);
 
   const handleTransform = useCallback(async () => {
     setIsLoading(true);

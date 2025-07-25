@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +13,11 @@ interface TextareaProps
   showCharCount?: boolean;
   sanitize?: boolean;
   renderMarkdown?: boolean; // Новый пропс для включения markdown
+  onTextSelection?: (selection: {
+    text: string;
+    start: number;
+    end: number;
+  }) => void;
 }
 
 const sanitizeInput = (input: string): string => {
@@ -108,6 +113,10 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       onChange,
       value,
       readOnly = false,
+      onTextSelection,
+      onMouseUp,
+      onTouchEnd,
+      onSelect,
       ...props
     },
     ref
@@ -115,6 +124,18 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     const [charCount, setCharCount] = useState(0);
     const [internalValue, setInternalValue] = useState((value as string) || "");
     const [isPreview, setIsPreview] = useState(false);
+    const internalRef = useRef<HTMLTextAreaElement | null>(null);
+
+    // Объединяем ref
+    useEffect(() => {
+      if (ref) {
+        if (typeof ref === "function") {
+          ref(internalRef.current);
+        } else {
+          ref.current = internalRef.current;
+        }
+      }
+    }, [ref]);
 
     useEffect(() => {
       setCharCount(internalValue?.length || 0);
@@ -149,6 +170,114 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       }
     };
 
+    const getSelectionCoordinates = () => {
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) return null;
+
+      const range = selection.getRangeAt(0);
+      return range.getBoundingClientRect();
+    };
+
+    const handleSelectionEvent = (
+      e:
+        | React.MouseEvent<HTMLTextAreaElement>
+        | React.TouchEvent<HTMLTextAreaElement>
+    ) => {
+      const textarea = internalRef.current;
+      if (!textarea) return;
+
+      if (onMouseUp && e.type === "mouseup") {
+        onMouseUp(e as React.MouseEvent<HTMLTextAreaElement>);
+      } else if (onTouchEnd && e.type === "touchend") {
+        onTouchEnd(e as React.TouchEvent<HTMLTextAreaElement>);
+      }
+
+      setTimeout(() => {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const selectedText = textarea.value
+          .substring(start || 0, end || 0)
+          .trim();
+
+        console.log("Selection event:", { selectedText, start, end });
+
+        if (selectedText && start !== end && onTextSelection) {
+          const selectionCoords = getSelectionCoordinates();
+          console.log("Selection coordinates:", selectionCoords);
+
+          onTextSelection({
+            text: selectedText,
+            start: start || 0,
+            end: end || 0,
+          });
+        }
+      }, 0);
+    };
+
+    const handleSelectionChange = (
+      e: React.SyntheticEvent<HTMLTextAreaElement>
+    ) => {
+      const textarea = e.currentTarget;
+      if (!textarea || !onTextSelection) return;
+
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const selectedText = textarea.value
+        .substring(start || 0, end || 0)
+        .trim();
+
+      console.log("Selection changed:", { selectedText, start, end });
+
+      if (selectedText && start !== end) {
+        const selectionCoords = getSelectionCoordinates();
+        console.log("Selection coordinates from change:", selectionCoords);
+
+        onTextSelection({
+          text: selectedText,
+          start: start || 0,
+          end: end || 0,
+        });
+      }
+
+      if (onSelect) {
+        onSelect(e as React.SyntheticEvent<HTMLTextAreaElement>);
+      }
+    };
+
+    useEffect(() => {
+      if (!readOnly || !onTextSelection || !internalRef.current) return;
+
+      const handleGlobalMouseUp = () => {
+        const textarea = internalRef.current;
+        if (!textarea) return;
+
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const selectedText = textarea.value
+          .substring(start || 0, end || 0)
+          .trim();
+
+        if (selectedText && start !== end) {
+          console.log("Global mouseup selection:", {
+            selectedText,
+            start,
+            end,
+          });
+          onTextSelection({
+            text: selectedText,
+            start: start || 0,
+            end: end || 0,
+          });
+        }
+      };
+
+      document.addEventListener("mouseup", handleGlobalMouseUp);
+
+      return () => {
+        document.removeEventListener("mouseup", handleGlobalMouseUp);
+      };
+    }, [readOnly, onTextSelection]);
+
     const showPreview = renderMarkdown && readOnly;
 
     const showToggleButtons = renderMarkdown && !readOnly;
@@ -166,7 +295,6 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           </motion.label>
         )}
 
-        {/* Кнопки переключения для markdown (только если не readOnly) */}
         {showToggleButtons && (
           <div className="flex mb-2 bg-slate-100 rounded-lg p-1">
             <button
@@ -196,7 +324,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           </div>
         )}
 
-        {/* Textarea или превью */}
+        {/* Textarea*/}
         {(showPreview && value) || (renderMarkdown && isPreview && value) ? (
           <motion.div
             className={cn(
@@ -230,10 +358,13 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
                 "border-red-300 focus:ring-red-500/50 focus:border-red-500",
               className
             )}
-            ref={ref}
+            ref={internalRef}
             value={internalValue}
             onChange={handleChange}
             readOnly={readOnly}
+            onMouseUp={handleSelectionEvent}
+            onTouchEnd={handleSelectionEvent}
+            onSelect={handleSelectionChange}
             transition={{ duration: 0.1 }}
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             {...(props as any)}

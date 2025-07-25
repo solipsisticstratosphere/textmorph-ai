@@ -17,6 +17,23 @@ export interface TransformationResponse {
   detected_language?: string;
 }
 
+export interface SelectionTransformRequest {
+  selected_text: string;
+  full_text: string;
+  transformation_preset: string;
+  temperature?: number;
+  target_language?: string;
+}
+
+export interface SelectionTransformResponse {
+  success: boolean;
+  transformed_selection: string;
+  model_used: string;
+  processing_time: number;
+  token_count: number;
+  error?: string;
+}
+
 export interface Language {
   code: string;
   name: string;

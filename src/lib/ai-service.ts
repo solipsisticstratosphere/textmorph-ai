@@ -2,6 +2,8 @@ import {
   TransformationRequest,
   TransformationResponse,
   Language,
+  SelectionTransformRequest,
+  SelectionTransformResponse,
 } from "@/types";
 
 export class AIService {
@@ -145,6 +147,64 @@ export class AIService {
     }
   }
 
+  async transformSelectedText(
+    request: SelectionTransformRequest
+  ): Promise<SelectionTransformResponse> {
+    const startTime = Date.now();
+
+    try {
+      let transformedSelection: string;
+      let modelUsed: string;
+
+      const detectedLanguage = this.detectLanguage(request.selected_text);
+
+      const targetLanguage =
+        request.target_language === "auto" || !request.target_language
+          ? detectedLanguage
+          : request.target_language;
+
+      if (this.moonshotKey) {
+        transformedSelection = await this.callMoonshotAPIForSelection(
+          request.selected_text,
+          request.full_text,
+          request.transformation_preset,
+          request.temperature || 0.7,
+          targetLanguage
+        );
+        modelUsed = "moonshot-v1-32k";
+      } else {
+        transformedSelection = await this.mockTransformSelection(
+          request.selected_text,
+          request.transformation_preset,
+          targetLanguage
+        );
+        modelUsed = "mock-model-v1";
+      }
+
+      const processingTime = Date.now() - startTime;
+
+      return {
+        success: true,
+        transformed_selection: transformedSelection,
+        model_used: modelUsed,
+        processing_time: processingTime,
+        token_count: this.estimateTokenCount(
+          request.selected_text + transformedSelection
+        ),
+      };
+    } catch (error) {
+      return {
+        success: false,
+        transformed_selection: "",
+        model_used: this.moonshotKey ? "moonshot-v1-8k" : "mock-model-v1",
+        processing_time: Date.now() - startTime,
+        token_count: 0,
+        error:
+          error instanceof Error ? error.message : "Unknown error occurred",
+      };
+    }
+  }
+
   private async callMoonshotAPI(
     inputText: string,
     instruction: string,
@@ -208,6 +268,67 @@ export class AIService {
     return data.choices[0].message.content;
   }
 
+  private async callMoonshotAPIForSelection(
+    selectedText: string,
+    fullText: string,
+    preset: string,
+    temperature: number = 0.7,
+    targetLanguage: string
+  ): Promise<string> {
+    if (!this.moonshotKey) {
+      throw new Error("Moonshot API key not configured");
+    }
+
+    const instruction = this.getPresetInstruction(preset);
+
+    const response = await fetch(
+      "https://api.moonshot.cn/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.moonshotKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "moonshot-v1-8k",
+          messages: [
+            {
+              role: "system",
+              content: this.getSelectionSystemPrompt(),
+            },
+            {
+              role: "user",
+              content: `Full text context: ${fullText}\n\nSelected text to transform: ${selectedText}\n\nTransformation: ${instruction}\n\nTarget language: ${this.getLanguageName(
+                targetLanguage
+              )}`,
+            },
+          ],
+          temperature: temperature,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(
+        `Moonshot API request failed: ${response.status} ${response.statusText} - ${errorText}`
+      );
+    }
+
+    const data = await response.json();
+
+    if (
+      !data.choices ||
+      !data.choices[0] ||
+      !data.choices[0].message ||
+      !data.choices[0].message.content
+    ) {
+      throw new Error("Invalid response from Moonshot API");
+    }
+
+    return data.choices[0].message.content;
+  }
+
   private getSystemPrompt(): string {
     return `You are a professional text transformer that performs formatting and translation tasks. Follow these rules:
 
@@ -220,6 +341,38 @@ export class AIService {
 7. If no translation is needed, simply format the text in the original language
 
 Your task is to produce ONE result that combines both formatting and language requirements.`;
+  }
+
+  private getSelectionSystemPrompt(): string {
+    return `You are a professional text transformer that performs specific transformations on selected text while maintaining context. Follow these rules:
+
+1. ONLY transform the selected text portion, not the entire text
+2. Maintain the same language as the selected text unless specifically instructed otherwise
+3. Keep your response FOCUSED only on the transformed selected text
+4. DO NOT include any explanations, notes, or commentary
+5. Preserve the overall meaning while applying the requested transformation
+6. Consider the full text context when transforming the selection to maintain coherence
+
+Your task is to produce ONE result that applies the requested transformation to ONLY the selected text.`;
+  }
+
+  private getPresetInstruction(preset: string): string {
+    switch (preset) {
+      case "rephrase":
+        return "Rephrase this text to say the same thing in different words";
+      case "expand":
+        return "Expand this text with more details and explanation";
+      case "shorten":
+        return "Shorten this text while preserving the key information";
+      case "formal":
+        return "Make this text more formal and professional";
+      case "casual":
+        return "Make this text more casual and conversational";
+      case "enhance":
+        return "Enhance this text by improving clarity, flow, and impact while maintaining the original meaning";
+      default:
+        return preset;
+    }
   }
 
   private buildCombinedInstruction(
@@ -303,6 +456,39 @@ Your task is to produce ONE result that combines both formatting and language re
     }
 
     return transformedText;
+  }
+
+  private async mockTransformSelection(
+    selectedText: string,
+    preset: string,
+    targetLanguage: string
+  ): Promise<string> {
+    await new Promise((resolve) =>
+      setTimeout(resolve, 500 + Math.random() * 1000)
+    );
+
+    switch (preset) {
+      case "rephrase":
+        return `[Rephrased] ${selectedText}`;
+      case "expand":
+        return `[Expanded with more details] ${selectedText} with additional contextual information and supporting details to enhance clarity.`;
+      case "shorten":
+        return `[Shortened] ${selectedText.substring(
+          0,
+          selectedText.length / 2
+        )}...`;
+      case "formal":
+        return `[Formal version] ${this.makeProfessional(
+          selectedText,
+          targetLanguage
+        )}`;
+      case "casual":
+        return `[Casual version] ${this.makeCasual(selectedText)}`;
+      case "enhance":
+        return `[Enhanced] ${selectedText} with improved clarity, better flow, and more impactful phrasing while preserving the original meaning.`;
+      default:
+        return `[Transformed with "${preset}"] ${selectedText}`;
+    }
   }
 
   private mockTranslate(text: string, targetLanguage: string): string {
