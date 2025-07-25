@@ -50,14 +50,11 @@ export function OutputSection({
     });
   }, [selectedText, selectionStart, selectionEnd]);
 
-  // Обновляем состояние при изменении outputText
   useEffect(() => {
-    // Сбрасываем тултип при изменении текста
     setTooltipPosition(null);
     setTextSelection("", -1, -1);
   }, [outputText, setTextSelection]);
 
-  // Следим за изменениями в editableText из модального окна
   useEffect(() => {
     const { editableText } = useTransformationStore.getState();
     if (editableText && editableText !== outputText) {
@@ -169,7 +166,7 @@ export function OutputSection({
           const x =
             textareaRect.left +
             Math.min(Math.max(horizontalOffset, 50), textareaRect.width - 50);
-          // Позиционируем тултип над текстом
+
           const y =
             textareaRect.top + Math.min(topOffset, textareaRect.height - 20);
 
@@ -213,7 +210,6 @@ export function OutputSection({
           throw new Error(data.error || "Selection transformation failed");
         }
 
-        // Replace the selected text in the output
         const newText =
           outputText.substring(0, selectionStart) +
           data.transformed_selection +
@@ -285,7 +281,7 @@ export function OutputSection({
               className="min-h-[300px] bg-gradient-to-br from-slate-50/50 to-cyan-50/30 text-base leading-relaxed"
               showCharCount={true}
               sanitize={true}
-              renderMarkdown={false} // Отключаем markdown для корректного выделения
+              renderMarkdown={false}
               onTextSelection={handleTextSelection}
             />
             <AnimatePresence>

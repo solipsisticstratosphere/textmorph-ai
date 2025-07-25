@@ -1,12 +1,5 @@
 import { useCallback, useState, useRef, useEffect } from "react";
-import {
-  FileText,
-  Edit2,
-  Copy,
-  Download,
-  FileOutput,
-  Wand2,
-} from "lucide-react";
+import { FileText, Edit2, Copy, Download, FileOutput } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Textarea";
 import { Modal } from "@/components/ui/Modal";
@@ -19,8 +12,7 @@ import {
 } from "@/lib/utils";
 import type React from "react";
 import toast from "react-hot-toast";
-import { SelectionTooltip, TooltipManager } from "./SelectionTooltip";
-import { motion } from "framer-motion";
+import { TooltipManager } from "./SelectionTooltip";
 
 interface TextDashboardProps {
   isOpen: boolean;
@@ -32,16 +24,9 @@ export function TextDashboard({ isOpen, onClose }: TextDashboardProps) {
     useTransformationStore();
   const [isEditing, setIsEditing] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
-  const [tooltipPosition, setTooltipPosition] = useState<{
-    x: number;
-    y: number;
-  } | null>(null);
-  const [selectedText, setSelectedText] = useState("");
-  const [selectionStart, setSelectionStart] = useState(-1);
-  const [selectionEnd, setSelectionEnd] = useState(-1);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const viewContainerRef = useRef<HTMLDivElement>(null);
-  const modalContainerRef = useRef<HTMLDivElement>(null);
+
   const tooltipManager = TooltipManager.getInstance();
 
   const dashboardWordCount = getWordCount(editableText);
@@ -54,16 +39,7 @@ export function TextDashboard({ isOpen, onClose }: TextDashboardProps) {
   }, [isOpen, outputText, editableText, setEditableText]);
 
   useEffect(() => {
-    if (isOpen) {
-      tooltipManager.setModalOpen(true);
-    } else {
-      tooltipManager.setModalOpen(false);
-
-      setTooltipPosition(null);
-      setSelectedText("");
-      setSelectionStart(-1);
-      setSelectionEnd(-1);
-    }
+    tooltipManager.setModalOpen(isOpen);
 
     return () => {
       if (isOpen) {
@@ -97,10 +73,10 @@ export function TextDashboard({ isOpen, onClose }: TextDashboardProps) {
   const toggleEditing = useCallback(() => {
     setIsEditing(!isEditing);
 
-    setTooltipPosition(null);
-    setSelectedText("");
-    setSelectionStart(-1);
-    setSelectionEnd(-1);
+    // setTooltipPosition(null); // Removed
+    // setSelectedText(""); // Removed
+    // setSelectionStart(-1); // Removed
+    // setSelectionEnd(-1); // Removed
 
     tooltipManager.closeAllTooltips();
   }, [isEditing]);
@@ -112,161 +88,83 @@ export function TextDashboard({ isOpen, onClose }: TextDashboardProps) {
     [setEditableText]
   );
 
-  const handleTextSelection = useCallback(
-    ({ text, start, end }: { text: string; start: number; end: number }) => {
-      if (!text || start === end) {
-        setSelectedText("");
-        setSelectionStart(-1);
-        setSelectionEnd(-1);
-        setTooltipPosition(null);
-        return;
-      }
+  // const handleTextSelection = useCallback(
+  //   ({ text, start, end }: { text: string; start: number; end: number }) => {
+  //     if (!text || start === end) {
+  //       // setSelectedText(""); // Removed
+  //       // setSelectionStart(-1); // Removed
+  //       // setSelectionEnd(-1); // Removed
+  //       // setTooltipPosition(null); // Removed
+  //       return;
+  //     }
 
-      console.log(
-        "Text selected in dashboard:",
-        text,
-        "Start:",
-        start,
-        "End:",
-        end
-      );
-      setSelectedText(text);
-      setSelectionStart(start);
-      setSelectionEnd(end);
+  //     console.log(
+  //       "Text selected in dashboard:",
+  //       text,
+  //       "Start:",
+  //       start,
+  //       "End:",
+  //       end
+  //     );
+  //     // setSelectedText(text); // Removed
+  //     // setSelectionStart(start); // Removed
+  //     // setSelectionEnd(end); // Released
 
-      if (isEditing && textareaRef.current) {
-        const textarea = textareaRef.current;
-        const rect = textarea.getBoundingClientRect();
+  //     // if (isEditing && textareaRef.current) { // Removed
+  //     //   const textarea = textareaRef.current; // Removed
+  //     //   const rect = textarea.getBoundingClientRect(); // Removed
 
-        const tooltipX = rect.left + rect.width / 2;
-        const tooltipY = rect.top - 10;
+  //     //   const tooltipX = rect.left + rect.width / 2; // Removed
+  //     //   const tooltipY = rect.top - 10; // Removed
 
-        setTooltipPosition({ x: tooltipX, y: tooltipY });
-      }
-    },
-    [isEditing]
-  );
+  //     //   setTooltipPosition({ x: tooltipX, y: tooltipY }); // Removed
+  //     // } // Removed
+  //   },
+  //   [isEditing]
+  // );
 
-  const handleViewModeSelection = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    (e: React.MouseEvent) => {
-      if (!isEditing) return;
+  // const handleViewModeSelection = useCallback(
+  //   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  //   (e: React.MouseEvent) => {
+  //     if (!isEditing) return;
 
-      setTimeout(() => {
-        const selection = window.getSelection();
-        if (!selection || selection.rangeCount === 0) return;
+  //     setTimeout(() => {
+  //       const selection = window.getSelection();
+  //       if (!selection || selection.rangeCount === 0) return;
 
-        const selectedText = selection.toString().trim();
-        if (!selectedText) {
-          setTooltipPosition(null);
-          setSelectedText("");
-          return;
-        }
+  //       const selectedText = selection.toString().trim();
+  //       if (!selectedText) {
+  //         // setTooltipPosition(null); // Removed
+  //         // setSelectedText(""); // Removed
+  //         return;
+  //       }
 
-        const range = selection.getRangeAt(0);
-        const rect = range.getBoundingClientRect();
+  //       const range = selection.getRangeAt(0);
+  //       const rect = range.getBoundingClientRect();
 
-        if (rect.width === 0 && rect.height === 0) return;
+  //       if (rect.width === 0 && rect.height === 0) return;
 
-        const tooltipX = rect.left + rect.width / 2;
-        const tooltipY = rect.top - 10;
+  //       // const tooltipX = rect.left + rect.width / 2; // Removed
+  //       // const tooltipY = rect.top - 10; // Removed
 
-        setSelectedText(selectedText);
-        setTooltipPosition({ x: tooltipX, y: tooltipY });
+  //       // setSelectedText(selectedText); // Removed
+  //       // setTooltipPosition({ x: tooltipX, y: tooltipY }); // Removed
 
-        const fullText = editableText;
-        const startIndex = fullText.indexOf(selectedText);
-        if (startIndex !== -1) {
-          setSelectionStart(startIndex);
-          setSelectionEnd(startIndex + selectedText.length);
-        }
-      }, 10);
-    },
-    [isEditing, editableText]
-  );
-
-  const handleCloseTooltip = useCallback(() => {
-    setTooltipPosition(null);
-    setSelectedText("");
-    setSelectionStart(-1);
-    setSelectionEnd(-1);
-
-    if (window.getSelection) {
-      window.getSelection()?.removeAllRanges();
-    }
-  }, []);
-
-  const handleTransformSelection = useCallback(
-    async (preset: string) => {
-      if (!selectedText || selectionStart === -1 || selectionEnd === -1) return;
-
-      try {
-        const response = await fetch("/api/transform/selection", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            selected_text: selectedText,
-            full_text: editableText,
-            transformation_preset: preset,
-            temperature: 0.7,
-            target_language: "auto",
-          }),
-        });
-
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.error || "Selection transformation failed");
-        }
-
-        const newText =
-          editableText.substring(0, selectionStart) +
-          data.transformed_selection +
-          editableText.substring(selectionEnd);
-
-        setEditableText(newText);
-        handleCloseTooltip();
-        toast.success("Selection transformed!");
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "An error occurred";
-        toast.error(errorMessage);
-      }
-    },
-    [
-      selectedText,
-      selectionStart,
-      selectionEnd,
-      editableText,
-      setEditableText,
-      handleCloseTooltip,
-    ]
-  );
-
-  const handleContainerClick = useCallback(
-    (e: React.MouseEvent) => {
-      const target = e.target as HTMLElement;
-
-      if (target.closest('[data-modal-context="textDashboard"]')) {
-        return;
-      }
-
-      if (
-        target === viewContainerRef.current ||
-        target.classList.contains("max-w-4xl") ||
-        (!target.closest("textarea") && !target.closest(".prose"))
-      ) {
-        handleCloseTooltip();
-      }
-    },
-    [handleCloseTooltip]
-  );
+  //       const fullText = editableText;
+  //       const startIndex = fullText.indexOf(selectedText);
+  //       if (startIndex !== -1) {
+  //         // setSelectionStart(startIndex); // Removed
+  //         // setSelectionEnd(startIndex + selectedText.length); // Removed
+  //       }
+  //     }, 10);
+  //   },
+  //   [isEditing, editableText]
+  // );
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && tooltipPosition) {
-        handleCloseTooltip();
+      if (e.key === "Escape") {
+        // handleCloseTooltip(); // Removed
       }
     };
 
@@ -274,7 +172,7 @@ export function TextDashboard({ isOpen, onClose }: TextDashboardProps) {
       document.addEventListener("keydown", handleKeyDown);
       return () => document.removeEventListener("keydown", handleKeyDown);
     }
-  }, [isOpen, tooltipPosition, handleCloseTooltip]);
+  }, [isOpen]);
 
   const handlePdfDownload = useCallback(async () => {
     try {
@@ -665,7 +563,7 @@ export function TextDashboard({ isOpen, onClose }: TextDashboardProps) {
     >
       <div
         className="flex items-center justify-between mb-4 relative"
-        ref={modalContainerRef}
+        // ref={modalContainerRef} // Removed
       >
         <div className="flex items-center space-x-3">
           <div className="text-sm text-slate-500 bg-white/50 px-3 py-1 rounded-full">
@@ -673,7 +571,7 @@ export function TextDashboard({ isOpen, onClose }: TextDashboardProps) {
           </div>
 
           {/* Индикатор активного выделения */}
-          {selectedText && (
+          {/* {selectedText && (
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -688,14 +586,11 @@ export function TextDashboard({ isOpen, onClose }: TextDashboardProps) {
                 &quot; selected
               </span>
             </motion.div>
-          )}
+          )} */}
         </div>
       </div>
 
-      <div
-        className="max-w-4xl mx-auto relative"
-        onClick={handleContainerClick}
-      >
+      <div className="max-w-4xl mx-auto relative">
         {isEditing ? (
           <div className="relative">
             <Textarea
@@ -705,45 +600,20 @@ export function TextDashboard({ isOpen, onClose }: TextDashboardProps) {
               className="min-h-[60vh] text-base leading-relaxed p-4 border-0 focus:ring-0 resize-none bg-transparent"
               placeholder="Edit your text here..."
               renderMarkdown={true}
-              onTextSelection={handleTextSelection}
             />
 
             <div className="text-xs text-slate-500 mt-2">
               Supports Markdown: **bold**, *italic*, `code`, [link](url)
-              {selectedText &&
-                " • Select text and use AI transformation tooltip"}
             </div>
           </div>
         ) : (
           <div
             className="prose prose-lg max-w-none text-slate-800 min-h-[60vh] p-4 relative cursor-text"
             ref={viewContainerRef}
-            onMouseUp={handleViewModeSelection}
-            onTouchEnd={(e: React.TouchEvent<HTMLDivElement>) =>
-              handleViewModeSelection(e as unknown as React.MouseEvent)
-            }
             style={{ userSelect: "text" }}
           >
             {formatTextForDisplay(editableText)}
-
-            {!selectedText && (
-              <div className="absolute bottom-2 right-2 text-xs text-slate-400 bg-white/80 px-2 py-1 rounded pointer-events-none">
-                Select text to transform with AI
-              </div>
-            )}
           </div>
-        )}
-
-        {/* Selection Tooltip */}
-        {tooltipPosition && selectedText && (
-          <SelectionTooltip
-            position={tooltipPosition}
-            onClose={handleCloseTooltip}
-            onTransform={handleTransformSelection}
-            containerRef={modalContainerRef}
-            modalContext="textDashboard"
-            isInModal={true}
-          />
         )}
       </div>
     </Modal>

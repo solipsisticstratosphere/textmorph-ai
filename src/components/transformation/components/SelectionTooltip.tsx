@@ -185,7 +185,6 @@ export function SelectionTooltip({
   const tooltipRef = useRef<HTMLDivElement>(null);
   const tooltipManager = TooltipManager.getInstance();
 
-  // Register tooltip with manager
   useEffect(() => {
     const tooltipId = `${modalContext}-${Date.now()}`;
 
@@ -207,14 +206,12 @@ export function SelectionTooltip({
     };
   }, [modalContext, isInModal, onClose]);
 
-  // Update modal state in manager
   useEffect(() => {
     if (isInModal) {
       tooltipManager.setModalOpen(true);
     }
   }, [isInModal]);
 
-  // Adjust position for modal context
   useEffect(() => {
     if (!shouldRender) return;
 
@@ -222,9 +219,8 @@ export function SelectionTooltip({
       const newPos = { ...position };
       const modalRect = containerRef.current.getBoundingClientRect();
       const tooltipWidth = 280;
-      const tooltipHeight = 200;
+      const tooltipHeight = isExpanded ? 300 : 200;
 
-      // Ensure tooltip is within modal bounds
       if (newPos.x - tooltipWidth / 2 < modalRect.left) {
         newPos.x = modalRect.left + tooltipWidth / 2 + 20;
       }
@@ -233,15 +229,15 @@ export function SelectionTooltip({
         newPos.x = modalRect.right - tooltipWidth / 2 - 20;
       }
 
-      if (newPos.y - tooltipHeight < modalRect.top) {
-        newPos.y = position.y + 30;
+      if (newPos.y - tooltipHeight - 20 < modalRect.top) {
+        newPos.y = position.y + 40;
       }
 
       setAdjustedPosition(newPos);
     } else {
       setAdjustedPosition(position);
     }
-  }, [position, isInModal, containerRef, shouldRender]);
+  }, [position, isInModal, containerRef, shouldRender, isExpanded]);
 
   const presets = [
     {
@@ -313,18 +309,15 @@ export function SelectionTooltip({
     e.stopPropagation();
   };
 
-  // Don't render if not allowed
   if (!shouldRender) {
     return null;
   }
 
-  // Calculate z-index based on modal context
   const getZIndex = () => {
     if (isInModal) {
-      // Modal tooltips need to be above modal backdrop (which is typically z-50 or 9999)
-      return "z-[60000]"; // Much higher than typical modal z-index
+      return "z-[60000]";
     }
-    return "z-[9999]"; // Standard tooltip z-index
+    return "z-[9999]";
   };
 
   return (
