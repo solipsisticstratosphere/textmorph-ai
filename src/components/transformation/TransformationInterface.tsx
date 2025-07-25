@@ -8,8 +8,8 @@ import { InputSection } from "./components/InputSection";
 import { OutputSection } from "./components/OutputSection";
 import { PresetSelector } from "./components/PresetSelector";
 import { TextDashboard } from "./components/TextDashboard";
-import { ErrorDisplay } from "./components/ErrorDisplay";
 import { Header } from "./components/Header";
+import toast from "react-hot-toast";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -35,8 +35,6 @@ export function TransformationInterface() {
   } = useTransformationStore();
 
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [copySuccess, setCopySuccess] = useState(false);
   const [languages, setLanguages] = useState<Language[]>([]);
   const [detectedLanguage, setDetectedLanguage] = useState<string | null>(null);
   const [showDashboard, setShowDashboard] = useState(false);
@@ -60,6 +58,7 @@ export function TransformationInterface() {
         }
       } catch (err) {
         console.error("Error fetching languages:", err);
+        toast.error("Failed to load languages. Using default options.");
         setLanguages([
           { code: "auto", name: "Auto-detect", native_name: "Auto-detect" },
           { code: "en", name: "English", native_name: "English" },
@@ -80,7 +79,6 @@ export function TransformationInterface() {
 
   const handleTransform = useCallback(async () => {
     setIsLoading(true);
-    setError(null);
 
     try {
       const response = await fetch("/api/transform", {
@@ -105,8 +103,11 @@ export function TransformationInterface() {
       if (data.detected_language) {
         setDetectedLanguage(data.detected_language);
       }
+      toast.success("Text transformed successfully!");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      const errorMessage =
+        err instanceof Error ? err.message : "An error occurred";
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -123,36 +124,22 @@ export function TransformationInterface() {
       <Header />
 
       {/* Dashboard Modal */}
-      <TextDashboard
-        isOpen={showDashboard}
-        onClose={toggleDashboard}
-        copySuccess={copySuccess}
-        setCopySuccess={setCopySuccess}
-      />
+      <TextDashboard isOpen={showDashboard} onClose={toggleDashboard} />
 
       {/* Quick Presets */}
       <PresetSelector />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Input Section */}
-        <InputSection
-          onTransform={handleTransform}
-          isLoading={isLoading}
-          setError={setError}
-        />
+        <InputSection onTransform={handleTransform} isLoading={isLoading} />
 
         {/* Output Section */}
         <OutputSection
-          copySuccess={copySuccess}
-          setCopySuccess={setCopySuccess}
           toggleDashboard={toggleDashboard}
           detectedLanguage={detectedLanguage}
           languages={languages}
         />
       </div>
-
-      {/* Error Display */}
-      <ErrorDisplay error={error} />
     </motion.div>
   );
 }

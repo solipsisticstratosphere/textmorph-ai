@@ -37,7 +37,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           )}
           <motion.input
             className={cn(
-              "w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm placeholder-slate-400 bg-white/80 backdrop-blur-sm text-slate-900",
+              "w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm placeholder-slate-400 bg-white/80 text-slate-900",
               "focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 focus:bg-white",
               "disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed",
               "transition-all duration-200",

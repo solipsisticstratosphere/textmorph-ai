@@ -17,20 +17,16 @@ import { useTransformationStore } from "@/lib/store";
 import { validateInput, getWordCount, getCharacterCount } from "@/lib/utils";
 import type { Language } from "@/types";
 import { useTypewriter } from "react-simple-typewriter";
+import toast from "react-hot-toast";
 
 interface InputSectionProps {
   onTransform: () => Promise<void>;
   isLoading: boolean;
-  setError: (error: string | null) => void;
 }
 function pluralize(count: number, singular: string, plural: string) {
   return `${count} ${count === 1 ? singular : plural}`;
 }
-export function InputSection({
-  onTransform,
-  isLoading,
-  setError,
-}: InputSectionProps) {
+export function InputSection({ onTransform, isLoading }: InputSectionProps) {
   const {
     inputText,
     instruction,
@@ -116,8 +112,7 @@ export function InputSection({
 
   const handleClear = useCallback(() => {
     clearAll();
-    setError(null);
-  }, [clearAll, setError]);
+  }, [clearAll]);
 
   const inputWordCount = getWordCount(inputText);
   const inputCharCount = getCharacterCount(inputText);
@@ -125,17 +120,17 @@ export function InputSection({
   const handleTransformClick = useCallback(async () => {
     const validation = validateInput(inputText);
     if (!validation.isValid) {
-      setError(validation.error || "Invalid input");
+      toast.error(validation.error || "Invalid input");
       return;
     }
 
     if (!instruction.trim()) {
-      setError("Please provide transformation instructions");
+      toast.error("Please provide transformation instructions");
       return;
     }
 
     await onTransform();
-  }, [inputText, instruction, onTransform, setError]);
+  }, [inputText, instruction, onTransform]);
 
   return (
     <motion.div

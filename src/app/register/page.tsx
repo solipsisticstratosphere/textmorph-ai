@@ -18,6 +18,8 @@ import {
   X,
   User,
 } from "lucide-react";
+import toast from "react-hot-toast";
+import { isValidName } from "@/lib/utils";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -45,6 +47,10 @@ const passwordRequirements: PasswordRequirement[] = [
     test: (pwd) => /[!@#$%^&*(),.?":{}|<>]/.test(pwd),
   },
 ];
+
+const validateNameFormat = (name: string): boolean => {
+  return isValidName(name);
+};
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -84,6 +90,8 @@ export default function RegisterPage() {
 
     if (!name) {
       newErrors.name = "Name is required.";
+    } else if (!validateNameFormat(name)) {
+      newErrors.name = "Name should contain only letters, spaces, and hyphens.";
     }
 
     if (password !== confirmPassword) {
@@ -108,19 +116,16 @@ export default function RegisterPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setErrors({
-          form: data.error || "Registration failed. Please try again.",
-        });
+        toast.error(data.error || "Registration failed. Please try again.");
         setIsLoading(false);
         return;
       }
 
+      toast.success("Account created successfully!");
       window.location.href = "/";
     } catch (error) {
       console.error("Registration error:", error);
-      setErrors({
-        form: "An error occurred during registration. Please try again.",
-      });
+      toast.error("An error occurred during registration. Please try again.");
       setIsLoading(false);
     }
   };
@@ -251,17 +256,6 @@ export default function RegisterPage() {
                   </p>
                 </motion.div>
 
-                {/* Form Error Message */}
-                {errors.form && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md"
-                  >
-                    {errors.form}
-                  </motion.div>
-                )}
-
                 {/* Form */}
                 <motion.form
                   onSubmit={handleSubmit}
@@ -305,11 +299,20 @@ export default function RegisterPage() {
                         setErrors((prev) => {
                           const newErrors = { ...prev };
                           delete newErrors.name;
+
+                          if (
+                            e.target.value &&
+                            !validateNameFormat(e.target.value)
+                          ) {
+                            newErrors.name =
+                              "Name should contain only letters, spaces, and hyphens.";
+                          }
+
                           return newErrors;
                         });
                       }}
                       error={errors.name}
-                      leftIcon={<User className="w-4 h-4" />}
+                      leftIcon={<User className="w-4 h-4 text-cyan-600" />}
                     />
                   </motion.div>
 
@@ -344,7 +347,7 @@ export default function RegisterPage() {
                         });
                       }}
                       error={errors.email}
-                      leftIcon={<Mail className="w-4 h-4" />}
+                      leftIcon={<Mail className="w-4 h-4 text-cyan-600" />}
                     />
                   </motion.div>
 
@@ -379,7 +382,7 @@ export default function RegisterPage() {
                         });
                       }}
                       error={errors.password}
-                      leftIcon={<Lock className="w-4 h-4" />}
+                      leftIcon={<Lock className="w-4 h-4 text-cyan-600" />}
                       rightIcon={
                         <motion.button
                           type="button"
@@ -508,7 +511,7 @@ export default function RegisterPage() {
                         });
                       }}
                       error={errors.confirmPassword}
-                      leftIcon={<Lock className="w-4 h-4" />}
+                      leftIcon={<Lock className="w-4 h-4 text-cyan-600" />}
                       rightIcon={
                         <motion.button
                           type="button"

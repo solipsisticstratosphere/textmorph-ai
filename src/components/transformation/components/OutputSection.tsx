@@ -8,10 +8,9 @@ import { useTransformationStore } from "@/lib/store";
 import { copyToClipboard, downloadText, getWordCount } from "@/lib/utils";
 import type { Language } from "@/types";
 import { useTypewriter } from "react-simple-typewriter";
+import toast from "react-hot-toast";
 
 interface OutputSectionProps {
-  copySuccess: boolean;
-  setCopySuccess: (success: boolean) => void;
   toggleDashboard: () => void;
   detectedLanguage: string | null;
   languages: Language[];
@@ -22,8 +21,6 @@ function pluralize(count: number, singular: string, plural: string) {
 }
 
 export function OutputSection({
-  copySuccess,
-  setCopySuccess,
   toggleDashboard,
   detectedLanguage,
   languages,
@@ -50,13 +47,15 @@ export function OutputSection({
   const handleCopy = useCallback(async () => {
     try {
       await copyToClipboard(outputText);
-      setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 2000);
-    } catch {}
-  }, [outputText, setCopySuccess]);
+      toast.success("Copied to clipboard!");
+    } catch {
+      toast.error("Failed to copy to clipboard");
+    }
+  }, [outputText]);
 
   const handleDownload = useCallback(() => {
     downloadText(outputText, "transformed-text.txt");
+    toast.success("Downloaded text file");
   }, [outputText]);
 
   const getLanguageDisplayName = useCallback(
@@ -153,7 +152,7 @@ export function OutputSection({
                     className="w-full text-base py-3"
                   >
                     <Copy className="w-5 h-5 mr-2" />
-                    {copySuccess ? "Copied!" : "Copy"}
+                    Copy
                   </Button>
                 </motion.div>
                 <motion.div>

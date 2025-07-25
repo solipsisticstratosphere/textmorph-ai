@@ -199,7 +199,11 @@ export function Header({ onMenuToggle, showMobileMenu = false }: HeaderProps) {
                   transition={{ duration: 0.3, delay: 0.4 }}
                 >
                   <Link href="/login" passHref>
-                    <Button variant="ghost" size="sm" className="font-medium">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="font-medium border border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+                    >
                       Sign In
                     </Button>
                   </Link>

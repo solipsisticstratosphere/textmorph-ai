@@ -11,20 +11,14 @@ import {
   getCharacterCount,
 } from "@/lib/utils";
 import type React from "react";
+import toast from "react-hot-toast";
 
 interface TextDashboardProps {
   isOpen: boolean;
   onClose: () => void;
-  copySuccess: boolean;
-  setCopySuccess: (success: boolean) => void;
 }
 
-export function TextDashboard({
-  isOpen,
-  onClose,
-  copySuccess,
-  setCopySuccess,
-}: TextDashboardProps) {
+export function TextDashboard({ isOpen, onClose }: TextDashboardProps) {
   const { editableText, setEditableText } = useTransformationStore();
   const [isEditing, setIsEditing] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
@@ -35,13 +29,15 @@ export function TextDashboard({
   const handleCopy = useCallback(async () => {
     try {
       await copyToClipboard(editableText);
-      setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 2000);
-    } catch {}
-  }, [editableText, setCopySuccess]);
+      toast.success("Copied to clipboard!");
+    } catch {
+      toast.error("Failed to copy to clipboard");
+    }
+  }, [editableText]);
 
   const handleDownload = useCallback(() => {
     downloadText(editableText, "transformed-text.txt");
+    toast.success("Downloaded text file");
   }, [editableText]);
 
   const toggleEditing = useCallback(() => {
@@ -313,8 +309,10 @@ export function TextDashboard({
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+      toast.success("PDF downloaded successfully");
     } catch (error) {
       console.error("PDF generation failed:", error);
+      toast.error("Failed to generate PDF");
     } finally {
       setPdfLoading(false);
     }
@@ -422,7 +420,7 @@ export function TextDashboard({
           <div className="flex space-x-3">
             <Button variant="secondary" onClick={handleCopy}>
               <Copy className="w-5 h-5 mr-2" />
-              {copySuccess ? "Copied!" : "Copy"}
+              Copy
             </Button>
             <Button variant="outline" onClick={handleDownload}>
               <Download className="w-5 h-5 mr-2" />

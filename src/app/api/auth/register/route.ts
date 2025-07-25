@@ -6,6 +6,7 @@ import {
   createSession,
   setAuthCookies,
 } from "@/lib/auth";
+import { isValidName } from "@/lib/utils";
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,6 +16,13 @@ export async function POST(request: NextRequest) {
     if (!email || !password || !name) {
       return NextResponse.json(
         { error: "Email, password, and name are required" },
+        { status: 400 }
+      );
+    }
+
+    if (!isValidName(name)) {
+      return NextResponse.json(
+        { error: "Name should contain only letters, spaces, and hyphens" },
         { status: 400 }
       );
     }

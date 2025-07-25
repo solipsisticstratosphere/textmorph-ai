@@ -127,3 +127,12 @@ export function estimateReadingTime(text: string): number {
   const wordCount = getWordCount(text);
   return Math.ceil(wordCount / wordsPerMinute);
 }
+
+/**
+ * Validates that a name contains only letters, spaces, and hyphens
+ * @param name The name to validate
+ * @returns boolean indicating whether the name is valid
+ */
+export const isValidName = (name: string): boolean => {
+  return /^[A-Za-zÀ-ÖØ-öø-ÿ\s\-]+$/.test(name);
+};

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import Link from "next/link";
 import { Eye, EyeOff, Mail, Lock, LogIn } from "lucide-react";
+import toast from "react-hot-toast";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -62,17 +63,18 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setErrors({ form: data.error || "Login failed. Please try again." });
+        toast.error(data.error || "Login failed. Please try again.");
         setIsLoading(false);
         return;
       }
 
+      toast.success("Login successful!");
       const urlParams = new URLSearchParams(window.location.search);
       const from = urlParams.get("from") || "/";
       window.location.href = from;
     } catch (error) {
       console.error("Login error:", error);
-      setErrors({ form: "An error occurred during login. Please try again." });
+      toast.error("An error occurred during login. Please try again.");
       setIsLoading(false);
     }
   };
@@ -187,17 +189,6 @@ export default function LoginPage() {
                   </p>
                 </motion.div>
 
-                {/* Form Error Message */}
-                {errors.form && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md"
-                  >
-                    {errors.form}
-                  </motion.div>
-                )}
-
                 {/* Form */}
                 <motion.form
                   onSubmit={handleSubmit}
@@ -245,7 +236,7 @@ export default function LoginPage() {
                         });
                       }}
                       error={errors.email}
-                      leftIcon={<Mail className="w-4 h-4" />}
+                      leftIcon={<Mail className="w-4 h-4 text-cyan-600" />}
                     />
                   </motion.div>
 
@@ -280,7 +271,7 @@ export default function LoginPage() {
                         });
                       }}
                       error={errors.password}
-                      leftIcon={<Lock className="w-4 h-4" />}
+                      leftIcon={<Lock className="w-4 h-4 text-cyan-600" />}
                       rightIcon={
                         <motion.button
                           type="button"
@@ -299,7 +290,7 @@ export default function LoginPage() {
                     />
                   </motion.div>
 
-                  <motion.div
+                  {/* <motion.div
                     className="flex items-center justify-between"
                     variants={{
                       hidden: { opacity: 0, y: 20 },
@@ -336,7 +327,7 @@ export default function LoginPage() {
                         Forgot your password?
                       </Link>
                     </div>
-                  </motion.div>
+                  </motion.div> */}
 
                   <motion.div
                     variants={{

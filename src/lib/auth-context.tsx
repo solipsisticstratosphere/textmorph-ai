@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { UserData } from "./auth";
+import toast from "react-hot-toast";
 
 interface AuthContextType {
   user: UserData | null;
@@ -102,9 +103,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       }
 
       setUser(data.user);
+      toast.success("Login successful!");
       return { success: true };
     } catch (error) {
       console.error("Login error:", error);
+      toast.error("An error occurred during login");
       return { success: false, error: "An error occurred during login" };
     }
   };
@@ -126,9 +129,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       }
 
       setUser(data.user);
+      toast.success("Registration successful!");
       return { success: true };
     } catch (error) {
       console.error("Registration error:", error);
+      toast.error("An error occurred during registration");
       return { success: false, error: "An error occurred during registration" };
     }
   };
@@ -139,9 +144,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         method: "POST",
       });
       setUser(null);
+      toast.success("Logged out successfully");
       window.location.href = "/login";
     } catch (error) {
       console.error("Logout error:", error);
+      toast.error("An error occurred during logout");
     }
   };
 
