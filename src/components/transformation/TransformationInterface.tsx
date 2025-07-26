@@ -75,16 +75,13 @@ export function TransformationInterface() {
       setEditableText(outputText);
     }
 
-
     if (!showDashboard) {
-  
       const { setTextSelection } = useTransformationStore.getState();
       setTextSelection("", -1, -1);
     }
 
     setShowDashboard(!showDashboard);
   }, [showDashboard, outputText, editableText, setEditableText]);
-
 
   useEffect(() => {
     if (!showDashboard && editableText && editableText !== outputText) {

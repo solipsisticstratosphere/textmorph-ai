@@ -14,14 +14,15 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String        @id @default(cuid())
   name          String
-  email         String    @unique
+  email         String        @unique
   password      String
-  isPro         Boolean   @default(false)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  isPro         Boolean       @default(false)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
   sessions      Session[]
+  textSessions  TextSession[]
 }
 
 model Session {
@@ -32,4 +33,40 @@ model Session {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model TextSession {
+  id            String        @id @default(cuid())
+  userId        String
+  title         String?       // Автогенерируемый или пользовательский заголовок
+  originalText  String        // Исходный введенный текст
+  finalText     String?       // Финальная версия текста
+  prompt        String        // Промпт для трансформации
+  language      String        // Язык текста
+  temperature   Float         @default(0.7)
+  isActive      Boolean       @default(true)  // Flag to track active session
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  revisions     TextRevision[]
+  
+  @@map("text_sessions")
+}
+
+model TextRevision {
+  id              String      @id @default(cuid())
+  sessionId       String
+  revisionNumber  Int         // Порядковый номер ревизии
+  selectedText    String      // Выделенный фрагмент
+  transformedText String      // Результат трансформации
+  transformPrompt String      // Промпт для этой конкретной ревизии
+  startPosition   Int         // Позиция начала в тексте
+  endPosition     Int         // Позиция конца в тексте
+  preset          String?     // Использованный пресет (если есть)
+  createdAt       DateTime    @default(now())
+  
+  session         TextSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  
+  @@map("text_revisions")
 }

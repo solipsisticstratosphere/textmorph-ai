@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AIService } from "@/lib/ai-service";
 import { TransformationRequest } from "@/types";
+import { prisma } from "@/lib/prisma";
+import { getAuthUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -57,6 +59,52 @@ function verifyCsrfToken(request: NextRequest): boolean {
   }
 }
 
+function generateSessionTitle(inputText: string, instruction: string): string {
+  if (instruction && instruction.length <= 50) {
+    return instruction;
+  }
+
+  const maxLength = 50;
+  let title = inputText.trim().split(/\s+/).slice(0, 5).join(" ");
+
+  if (title.length > maxLength) {
+    title = title.substring(0, maxLength - 3) + "...";
+  }
+
+  return title || "Untitled Transformation";
+}
+
+async function createNewSession(
+  userId: string,
+  inputText: string,
+  instruction: string,
+  result: {
+    transformed_text: string;
+    detected_language?: string;
+    temperature?: number;
+  }
+) {
+  await prisma.$executeRaw`
+    UPDATE text_sessions 
+    SET "isActive" = false 
+    WHERE "userId" = ${userId} AND "isActive" = true
+  `;
+
+  const session = await prisma.textSession.create({
+    data: {
+      userId: userId,
+      title: generateSessionTitle(inputText, instruction),
+      originalText: inputText,
+      finalText: result.transformed_text,
+      prompt: instruction,
+      language: result.detected_language || "auto",
+      temperature: result.temperature || 0.7,
+    },
+  });
+
+  return session.id;
+}
+
 export async function POST(request: NextRequest) {
   try {
     if (!verifyCsrfToken(request)) {
@@ -99,22 +147,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (body.input_text.length > 10000) {
-      return NextResponse.json(
-        { error: "Input text too long. Maximum 10,000 characters allowed." },
-        { status: 400 }
-      );
-    }
-
-    if (body.transformation_instruction.length > 500) {
-      return NextResponse.json(
-        {
-          error:
-            "Transformation instruction too long. Maximum 500 characters allowed.",
-        },
-        { status: 400 }
-      );
-    }
+    const sanitizedInputText = sanitizeInput(body.input_text);
+    const sanitizedInstruction = sanitizeInput(body.transformation_instruction);
 
     const aiService = AIService.getInstance();
     const supportedLanguages = aiService
@@ -137,10 +171,8 @@ export async function POST(request: NextRequest) {
     }
 
     const sanitizedRequest: TransformationRequest = {
-      input_text: sanitizeInput(body.input_text),
-      transformation_instruction: sanitizeInput(
-        body.transformation_instruction
-      ),
+      input_text: sanitizedInputText,
+      transformation_instruction: sanitizedInstruction,
       model_preference: body.model_preference || "default",
       max_tokens: Math.min(body.max_tokens || 1000, 2000),
       temperature: Math.max(0, Math.min(body.temperature || 0.7, 1)),
@@ -156,6 +188,51 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const user = await getAuthUser();
+
+    let currentSessionId = null;
+
+    if (user && result.success) {
+      try {
+        const sessionId =
+          request.cookies.get("currentSessionId")?.value ||
+          request.headers.get("x-session-id");
+
+        if (sessionId) {
+          const session = await prisma.textSession.findUnique({
+            where: { id: sessionId },
+          });
+
+          if (session && session.userId === user.id) {
+            await prisma.textSession.update({
+              where: { id: sessionId },
+              data: {
+                finalText: result.transformed_text,
+                updatedAt: new Date(),
+              },
+            });
+            currentSessionId = sessionId;
+          } else {
+            currentSessionId = await createNewSession(
+              user.id,
+              sanitizedInputText,
+              sanitizedInstruction,
+              result
+            );
+          }
+        } else {
+          currentSessionId = await createNewSession(
+            user.id,
+            sanitizedInputText,
+            sanitizedInstruction,
+            result
+          );
+        }
+      } catch (error) {
+        console.error("Failed to save text session:", error);
+      }
+    }
+
     const responseHeaders = new Headers();
     responseHeaders.set("Content-Type", "application/json");
     responseHeaders.set("X-Content-Type-Options", "nosniff");
@@ -163,52 +240,58 @@ export async function POST(request: NextRequest) {
     responseHeaders.set("X-XSS-Protection", "1; mode=block");
     responseHeaders.set("Content-Security-Policy", "default-src 'self'");
 
-    return NextResponse.json(result, {
+    const response = NextResponse.json(result, {
       status: 200,
       headers: responseHeaders,
     });
+
+    if (currentSessionId) {
+      response.cookies.set("currentSessionId", currentSessionId, {
+        path: "/",
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+      });
+    }
+
+    return response;
   } catch (error) {
     console.error("Transform API error:", error);
 
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        success: false,
+        transformed_text: "",
+        model_used: "error",
+        processing_time: 0,
+        token_count: 0,
+        error:
+          error instanceof Error ? error.message : "Unknown error occurred",
+      },
       { status: 500 }
     );
   }
 }
 
 export async function GET() {
-  const responseHeaders = new Headers();
-  responseHeaders.set("Content-Type", "application/json");
-  responseHeaders.set("X-Content-Type-Options", "nosniff");
-  responseHeaders.set("X-Frame-Options", "DENY");
-  responseHeaders.set("X-XSS-Protection", "1; mode=block");
-  responseHeaders.set("Content-Security-Policy", "default-src 'self'");
-
   return NextResponse.json(
     {
-      message: "TextMorph AI Transform API",
-      version: "1.0.0",
+      message: "Transform API is running",
       endpoints: {
-        POST: "/api/transform - Transform text with AI",
+        transform: "POST /api/transform",
       },
     },
-    {
-      headers: responseHeaders,
-    }
+    { status: 200 }
   );
 }
 
 export async function OPTIONS() {
   return new NextResponse(null, {
-    status: 200,
+    status: 204,
     headers: {
-      "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      "X-Content-Type-Options": "nosniff",
-      "X-Frame-Options": "DENY",
-      "X-XSS-Protection": "1; mode=block",
     },
   });
 }

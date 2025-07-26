@@ -1,22 +1,19 @@
 "use client";
 
-import type React from "react";
-
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "react-hot-toast";
 import {
+  Wand2,
+  Sparkles as SparkleIcon,
   Maximize2,
   Minimize2,
   X,
-  Wand2,
-  RefreshCcw,
-  FileText,
-  Scissors,
-  Briefcase,
+  Check,
+  Zap,
+  Type,
   Coffee,
-  SparkleIcon,
 } from "lucide-react";
-import toast from "react-hot-toast";
 
 interface SelectionTooltipProps {
   position: { x: number; y: number };
@@ -243,31 +240,31 @@ export function SelectionTooltip({
     {
       id: "rephrase",
       label: "Rephrase",
-      icon: <RefreshCcw className="w-4 h-4" />,
+      icon: <Zap className="w-4 h-4" />,
       color: "from-blue-500 to-indigo-600",
     },
     {
       id: "expand",
       label: "Expand",
-      icon: <FileText className="w-4 h-4" />,
+      icon: <Type className="w-4 h-4" />,
       color: "from-green-500 to-emerald-600",
     },
     {
       id: "shorten",
       label: "Shorten",
-      icon: <Scissors className="w-4 h-4" />,
+      icon: <Check className="w-4 h-4" />,
       color: "from-orange-500 to-red-600",
     },
     {
       id: "formal",
       label: "Formal",
-      icon: <Briefcase className="w-4 h-4" />,
+      icon: <Coffee className="w-4 h-4" />,
       color: "from-purple-500 to-violet-600",
     },
     {
       id: "casual",
       label: "Casual",
-      icon: <Coffee className="w-4 h-4" />,
+      icon: <SparkleIcon className="w-4 h-4" />,
       color: "from-pink-500 to-rose-600",
     },
     {

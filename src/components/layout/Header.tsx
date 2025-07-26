@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, User, LogOut } from "lucide-react";
+import { Menu, X, User, LogOut, History } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import Image from "next/image";
 import Link from "next/link";
@@ -177,6 +177,16 @@ export function Header({ onMenuToggle, showMobileMenu = false }: HeaderProps) {
                       </div>
 
                       <div className="p-2">
+                        <Link href="/history">
+                          <motion.div
+                            className="w-full flex items-center space-x-3 p-3 text-left text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors duration-200 group cursor-pointer"
+                            whileHover={{ x: 2 }}
+                            whileTap={{ scale: 0.98 }}
+                          >
+                            <History className="w-4 h-4 group-hover:text-blue-500" />
+                            <span className="font-medium">Text History</span>
+                          </motion.div>
+                        </Link>
                         <motion.button
                           onClick={handleLogout}
                           className="w-full flex items-center space-x-3 p-3 text-left text-sm text-slate-700 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors duration-200 group"
@@ -315,6 +325,22 @@ export function Header({ onMenuToggle, showMobileMenu = false }: HeaderProps) {
                           </span>
                         )}
                       </div>
+                      <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <Link href="/history" passHref>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="justify-start font-medium w-full hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 bg-transparent mb-2"
+                          >
+                            <History className="w-4 h-4 mr-2" />
+                            Text History
+                          </Button>
+                        </Link>
+                      </motion.div>
                       <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}

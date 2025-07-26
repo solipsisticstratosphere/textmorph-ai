@@ -191,10 +191,22 @@ export function OutputSection({
       if (!selectedText || selectionStart === -1 || selectionEnd === -1) return;
 
       try {
+        // Get the current session ID from cookies if available
+        let sessionId = null;
+        const cookies = document.cookie.split(";");
+        for (const cookie of cookies) {
+          const [name, value] = cookie.trim().split("=");
+          if (name === "currentSessionId") {
+            sessionId = value;
+            break;
+          }
+        }
+
         const response = await fetch("/api/transform/selection", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            ...(sessionId && { "x-session-id": sessionId }),
           },
           body: JSON.stringify({
             selected_text: selectedText,
@@ -202,6 +214,9 @@ export function OutputSection({
             transformation_preset: preset,
             temperature: 0.7,
             target_language: "auto",
+            start_position: selectionStart,
+            end_position: selectionEnd,
+            sessionId: sessionId,
           }),
         });
 

@@ -22,6 +22,7 @@ interface TransformationState {
   clearInputText: () => void;
   clearOutputText: () => void;
   clearAll: () => void;
+  deactivateSessions: () => Promise<void>;
 }
 
 export const useTransformationStore = create<TransformationState>()(
@@ -55,8 +56,17 @@ export const useTransformationStore = create<TransformationState>()(
           selectionEnd: -1,
         }),
       clearInputText: () => set({ inputText: "" }),
-      clearOutputText: () => set({ outputText: "", editableText: "" }),
-      clearAll: () =>
+      clearOutputText: () => {
+        set({ outputText: "", editableText: "" });
+
+        fetch("/api/history/sessions/deactivate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }).catch((err) => console.error("Failed to deactivate sessions:", err));
+      },
+      clearAll: () => {
         set({
           inputText: "",
           outputText: "",
@@ -66,7 +76,27 @@ export const useTransformationStore = create<TransformationState>()(
           selectedText: "",
           selectionStart: -1,
           selectionEnd: -1,
-        }),
+        });
+
+        fetch("/api/history/sessions/deactivate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }).catch((err) => console.error("Failed to deactivate sessions:", err));
+      },
+      deactivateSessions: async () => {
+        try {
+          await fetch("/api/history/sessions/deactivate", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+        } catch (err) {
+          console.error("Failed to deactivate sessions:", err);
+        }
+      },
     }),
     {
       name: "transformation-storage",

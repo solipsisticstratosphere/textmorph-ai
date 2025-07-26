@@ -24,9 +24,30 @@ const isPublicPath = (path: string) => {
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
+  if (path.startsWith("/api/transform")) {
+    const response = NextResponse.next();
+
+    const sessionId = request.cookies.get("currentSessionId")?.value;
+
+    if (sessionId) {
+      response.headers.set("x-session-id", sessionId);
+    }
+
+    return handleAuth(request, response);
+  }
+
   if (isPublicPath(path)) {
     return NextResponse.next();
   }
+
+  return handleAuth(request);
+}
+
+async function handleAuth(
+  request: NextRequest,
+  response = NextResponse.next()
+) {
+  const path = request.nextUrl.pathname;
 
   if (path.startsWith("/api/")) {
     const accessToken = request.cookies.get("accessToken")?.value;
@@ -41,19 +62,19 @@ export async function middleware(request: NextRequest) {
     const user = await verifyAccessToken(accessToken);
 
     if (!user) {
-      const response = await refreshAccessToken(request);
+      const refreshResponse = await refreshAccessToken(request);
 
-      if (!response) {
+      if (!refreshResponse) {
         return NextResponse.json(
           { error: "Authentication required" },
           { status: 401 }
         );
       }
 
-      return response;
+      return refreshResponse;
     }
 
-    return NextResponse.next();
+    return response;
   }
 
   const accessToken = request.cookies.get("accessToken")?.value;
@@ -93,7 +114,6 @@ export async function middleware(request: NextRequest) {
 
     const setCookieHeader = refreshResponse.headers.getSetCookie();
 
-    const response = NextResponse.next();
     setCookieHeader.forEach((cookie) => {
       response.headers.append("Set-Cookie", cookie);
     });
@@ -101,7 +121,7 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {
@@ -115,5 +135,6 @@ export const config = {
      * - api routes (handled separately)
      */
     "/((?!_next/static|_next/image|favicon.ico|api/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/api/transform/:path*",
   ],
 };

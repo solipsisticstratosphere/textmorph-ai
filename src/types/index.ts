@@ -60,6 +60,62 @@ export interface TransformationHistory {
   model_used: string;
 }
 
+// Text history types
+export interface TextSession {
+  id: string;
+  userId: string;
+  title?: string;
+  originalText: string;
+  finalText?: string;
+  prompt: string;
+  language: string;
+  temperature: number;
+  createdAt: Date;
+  updatedAt: Date;
+  revisions?: TextRevision[];
+}
+
+export interface TextRevision {
+  id: string;
+  sessionId: string;
+  revisionNumber: number;
+  selectedText: string;
+  transformedText: string;
+  transformPrompt: string;
+  startPosition: number;
+  endPosition: number;
+  preset?: string;
+  createdAt: Date;
+}
+
+export interface CreateTextSessionRequest {
+  originalText: string;
+  finalText?: string;
+  prompt: string;
+  language: string;
+  temperature?: number;
+  title?: string;
+}
+
+export interface AddTextRevisionRequest {
+  sessionId: string;
+  selectedText: string;
+  transformedText: string;
+  transformPrompt: string;
+  startPosition: number;
+  endPosition: number;
+  preset?: string;
+}
+
+export interface TextHistoryQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  language?: string;
+  dateFrom?: string;
+  dateTo?: string;
+}
+
 export interface AppState {
   inputText: string;
   outputText: string;

@@ -43,6 +43,8 @@ export function InputSection({ onTransform, isLoading }: InputSectionProps) {
   const [languages, setLanguages] = useState<Language[]>([]);
   const [isLoadingLanguages, setIsLoadingLanguages] = useState(true);
   const [typingPlaceholder, setTypingPlaceholder] = useState("");
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [previousInputText, setPreviousInputText] = useState("");
 
   const [text] = useTypewriter({
     words: [
@@ -62,6 +64,7 @@ export function InputSection({ onTransform, isLoading }: InputSectionProps) {
   useEffect(() => {
     setTypingPlaceholder(text);
   }, [text]);
+
   // Fetch supported languages
   useEffect(() => {
     const fetchLanguages = async () => {
@@ -95,6 +98,50 @@ export function InputSection({ onTransform, isLoading }: InputSectionProps) {
     fetchLanguages();
   }, []);
 
+  // Track when input text changes significantly to create a new session
+  useEffect(() => {
+    // Get current session ID from cookies when component mounts
+    const getCookieValue = (name: string) => {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop()?.split(";").shift();
+      return null;
+    };
+
+    const sessionIdFromCookie = getCookieValue("currentSessionId");
+    if (sessionIdFromCookie && !currentSessionId) {
+      setCurrentSessionId(sessionIdFromCookie);
+      console.log("Set current session ID from cookie:", sessionIdFromCookie);
+    }
+
+    if (inputText !== previousInputText) {
+      const isDifferentText =
+        Math.abs(inputText.length - previousInputText.length) > 10 ||
+        (inputText.length > 0 &&
+          previousInputText.length > 0 &&
+          inputText.substring(0, 20) !== previousInputText.substring(0, 20));
+
+      if (isDifferentText) {
+      }
+
+      setPreviousInputText(inputText);
+    }
+  }, [inputText, currentSessionId]);
+
+  // Function to deactivate all active sessions
+  const deactivateActiveSessions = async () => {
+    try {
+      await fetch("/api/history/sessions/deactivate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    } catch (error) {
+      console.error("Failed to deactivate sessions:", error);
+    }
+  };
+
   const handleLanguageChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       setSelectedLanguage(e.target.value);
@@ -112,6 +159,8 @@ export function InputSection({ onTransform, isLoading }: InputSectionProps) {
 
   const handleClear = useCallback(() => {
     clearAll();
+    setCurrentSessionId(null);
+    deactivateActiveSessions();
   }, [clearAll]);
 
   const inputWordCount = getWordCount(inputText);
@@ -129,8 +178,35 @@ export function InputSection({ onTransform, isLoading }: InputSectionProps) {
       return;
     }
 
-    await onTransform();
-  }, [inputText, instruction, onTransform]);
+    try {
+      await deactivateActiveSessions();
+
+      setCurrentSessionId(null);
+
+      localStorage.removeItem("currentSessionId");
+      document.cookie =
+        "currentSessionId=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
+      await onTransform();
+
+      try {
+        const response = await fetch("/api/history/sessions?limit=1");
+        if (response.ok) {
+          const data = await response.json();
+          if (data.sessions && data.sessions.length > 0) {
+            const newSessionId = data.sessions[0].id;
+            setCurrentSessionId(newSessionId);
+            localStorage.setItem("currentSessionId", newSessionId);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch session ID:", error);
+      }
+    } catch (error) {
+      console.error("Transform error:", error);
+      toast.error("Failed to transform text");
+    }
+  }, [inputText, instruction, onTransform, deactivateActiveSessions]);
 
   return (
     <motion.div
@@ -178,7 +254,11 @@ export function InputSection({ onTransform, isLoading }: InputSectionProps) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={clearInputText}
+                    onClick={() => {
+                      clearInputText();
+                      setCurrentSessionId(null);
+                      deactivateActiveSessions();
+                    }}
                     className="p-1 h-auto hover:text-red-600"
                     title="Clear input text"
                   >
@@ -189,7 +269,6 @@ export function InputSection({ onTransform, isLoading }: InputSectionProps) {
             </AnimatePresence>
           </div>
           <div className="relative w-full">
-            {/* Кастомный плейсхолдер */}
             {instruction === "" && (
               <div className="absolute inset-y-0 left-4 flex items-center text-slate-400 pointer-events-none space-x-2 z-10">
                 <span className="text-sm">
@@ -226,7 +305,6 @@ export function InputSection({ onTransform, isLoading }: InputSectionProps) {
               </span>
 
               <div className="flex-1 relative h-6 bg-gray-200 rounded-full overflow-hidden">
-                {/* Жидкость с волновым эффектом */}
                 <div
                   className="absolute bottom-0 left-0 h-full transition-all duration-500 ease-out"
                   style={{
