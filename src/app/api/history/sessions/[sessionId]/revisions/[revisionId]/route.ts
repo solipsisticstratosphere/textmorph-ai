@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { sessionId: string; revisionId: string } }
+  context: { params: { sessionId: string; revisionId: string } }
 ) {
   try {
     const user = await getAuthUser();
@@ -17,7 +17,7 @@ export async function GET(
       );
     }
 
-    const { sessionId, revisionId } = await Promise.resolve(params);
+    const { sessionId, revisionId } = context.params;
 
     const session = await prisma.textSession.findUnique({
       where: { id: sessionId },
@@ -60,10 +60,9 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { sessionId: string; revisionId: string } }
+  context: { params: { sessionId: string; revisionId: string } }
 ) {
   try {
-    // Проверка аутентификации
     const user = await getAuthUser();
     if (!user) {
       return NextResponse.json(
@@ -72,7 +71,7 @@ export async function PATCH(
       );
     }
 
-    const { sessionId, revisionId } = await Promise.resolve(params);
+    const { sessionId, revisionId } = context.params;
     const data = await request.json();
 
     const session = await prisma.textSession.findUnique({
@@ -134,7 +133,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { sessionId: string; revisionId: string } }
+  context: { params: { sessionId: string; revisionId: string } }
 ) {
   try {
     const user = await getAuthUser();
@@ -145,7 +144,7 @@ export async function DELETE(
       );
     }
 
-    const { sessionId, revisionId } = await Promise.resolve(params);
+    const { sessionId, revisionId } = context.params;
 
     const session = await prisma.textSession.findUnique({
       where: { id: sessionId },

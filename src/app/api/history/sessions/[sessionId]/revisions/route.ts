@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { sessionId: string } }
+  context: { params: { sessionId: string } }
 ) {
   try {
     const user = await getAuthUser();
@@ -18,7 +18,7 @@ export async function POST(
       );
     }
 
-    const { sessionId } = await Promise.resolve(params);
+    const { sessionId } = context.params;
 
     const session = await prisma.textSession.findUnique({
       where: { id: sessionId },
@@ -98,7 +98,7 @@ export async function POST(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { sessionId: string } }
+  context: { params: { sessionId: string } }
 ) {
   try {
     const user = await getAuthUser();
@@ -109,7 +109,7 @@ export async function GET(
       );
     }
 
-    const { sessionId } = await Promise.resolve(params);
+    const { sessionId } = context.params;
 
     const session = await prisma.textSession.findUnique({
       where: { id: sessionId },
