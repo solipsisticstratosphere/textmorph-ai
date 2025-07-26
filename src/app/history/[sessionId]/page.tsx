@@ -10,9 +10,7 @@ import { Button } from "@/components/ui/Button";
 export const dynamic = "force-dynamic";
 
 interface SessionDetailPageProps {
-  params: {
-    sessionId: string;
-  };
+  params: Promise<{ sessionId: string }>;
 }
 
 export default async function SessionDetailPage({
