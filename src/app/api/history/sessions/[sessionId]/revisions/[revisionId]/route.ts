@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET(
   request: NextRequest,
-  context: { params: { sessionId: string; revisionId: string } }
+  { params }: { params: { sessionId: string; revisionId: string } }
 ) {
   try {
     const user = await getAuthUser();
@@ -17,7 +17,7 @@ export async function GET(
       );
     }
 
-    const { sessionId, revisionId } = context.params;
+    const { sessionId, revisionId } = params;
 
     const session = await prisma.textSession.findUnique({
       where: { id: sessionId },
@@ -60,7 +60,7 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  context: { params: { sessionId: string; revisionId: string } }
+  { params }: { params: { sessionId: string; revisionId: string } }
 ) {
   try {
     const user = await getAuthUser();
@@ -71,7 +71,7 @@ export async function PATCH(
       );
     }
 
-    const { sessionId, revisionId } = context.params;
+    const { sessionId, revisionId } = params;
     const data = await request.json();
 
     const session = await prisma.textSession.findUnique({
@@ -133,7 +133,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  context: { params: { sessionId: string; revisionId: string } }
+  { params }: { params: { sessionId: string; revisionId: string } }
 ) {
   try {
     const user = await getAuthUser();
@@ -144,7 +144,7 @@ export async function DELETE(
       );
     }
 
-    const { sessionId, revisionId } = context.params;
+    const { sessionId, revisionId } = params;
 
     const session = await prisma.textSession.findUnique({
       where: { id: sessionId },
