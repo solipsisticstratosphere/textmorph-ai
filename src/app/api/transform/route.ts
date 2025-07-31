@@ -3,6 +3,7 @@ import { AIService } from "@/lib/ai-service";
 import { TransformationRequest } from "@/types";
 import { prisma } from "@/lib/prisma";
 import { getAuthUser } from "@/lib/auth";
+import { sanitizeInput, validateInput } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -34,13 +35,6 @@ function checkRateLimit(key: string): { allowed: boolean; resetTime?: number } {
 
   current.count++;
   return { allowed: true };
-}
-
-function sanitizeInput(input: string): string {
-  return input
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, "")
-    .trim();
 }
 
 function verifyCsrfToken(request: NextRequest): boolean {
@@ -84,12 +78,22 @@ async function createNewSession(
     temperature?: number;
   }
 ) {
-  await prisma.$executeRaw`
-    UPDATE text_sessions 
-    SET "isActive" = false 
-    WHERE "userId" = ${userId} AND "isActive" = true
-  `;
+  console.log("Creating new session for user:", userId);
 
+  // Деактивируем все активные сессии пользователя
+  const deactivated = await prisma.textSession.updateMany({
+    where: {
+      userId: userId,
+      isActive: true,
+    },
+    data: {
+      isActive: false,
+    },
+  });
+
+  console.log("Deactivated sessions:", deactivated.count);
+
+  // Создаем новую сессию
   const session = await prisma.textSession.create({
     data: {
       userId: userId,
@@ -98,9 +102,12 @@ async function createNewSession(
       finalText: result.transformed_text,
       prompt: instruction,
       language: result.detected_language || "auto",
-      temperature: result.temperature || 0.7,
+      temperature: Math.max(0, Math.min(result.temperature || 0.7, 1)),
+      isActive: true, // Важно: устанавливаем флаг активной сессии
     },
   });
+
+  console.log("Created new session with ID:", session.id);
 
   return session.id;
 }
@@ -143,6 +150,24 @@ export async function POST(request: NextRequest) {
           error:
             "Missing required fields: input_text and transformation_instruction",
         },
+        { status: 400 }
+      );
+    }
+
+    const inputValidation = validateInput(body.input_text);
+    if (!inputValidation.isValid) {
+      return NextResponse.json(
+        { error: inputValidation.error },
+        { status: 400 }
+      );
+    }
+
+    const instructionValidation = validateInput(
+      body.transformation_instruction
+    );
+    if (!instructionValidation.isValid) {
+      return NextResponse.json(
+        { error: instructionValidation.error },
         { status: 400 }
       );
     }
@@ -194,40 +219,14 @@ export async function POST(request: NextRequest) {
 
     if (user && result.success) {
       try {
-        const sessionId =
-          request.cookies.get("currentSessionId")?.value ||
-          request.headers.get("x-session-id");
-
-        if (sessionId) {
-          const session = await prisma.textSession.findUnique({
-            where: { id: sessionId },
-          });
-
-          if (session && session.userId === user.id) {
-            await prisma.textSession.update({
-              where: { id: sessionId },
-              data: {
-                finalText: result.transformed_text,
-                updatedAt: new Date(),
-              },
-            });
-            currentSessionId = sessionId;
-          } else {
-            currentSessionId = await createNewSession(
-              user.id,
-              sanitizedInputText,
-              sanitizedInstruction,
-              result
-            );
-          }
-        } else {
-          currentSessionId = await createNewSession(
-            user.id,
-            sanitizedInputText,
-            sanitizedInstruction,
-            result
-          );
-        }
+        // Всегда создаем новую сессию при трансформации полного текста
+        // Игнорируем существующий sessionId из cookies или headers
+        currentSessionId = await createNewSession(
+          user.id,
+          sanitizedInputText,
+          sanitizedInstruction,
+          result
+        );
       } catch (error) {
         console.error("Failed to save text session:", error);
       }
@@ -246,6 +245,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (currentSessionId) {
+      console.log("Setting cookie with session ID:", currentSessionId);
       response.cookies.set("currentSessionId", currentSessionId, {
         path: "/",
         httpOnly: true,
@@ -253,6 +253,8 @@ export async function POST(request: NextRequest) {
         sameSite: "strict",
         maxAge: 60 * 60 * 24 * 7, // 7 days
       });
+    } else {
+      console.log("No session ID to set in cookie");
     }
 
     return response;

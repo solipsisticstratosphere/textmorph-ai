@@ -5,7 +5,12 @@ import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Textarea";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { useTransformationStore } from "@/lib/store";
-import { copyToClipboard, downloadText, getWordCount } from "@/lib/utils";
+import {
+  copyToClipboard,
+  downloadText,
+  getWordCount,
+  validateInput,
+} from "@/lib/utils";
 import type { Language } from "@/types";
 import { useTypewriter } from "react-simple-typewriter";
 import toast from "react-hot-toast";
@@ -135,9 +140,8 @@ export function OutputSection({
 
             console.log("Selection rect:", rect);
 
-            // Позиционируем тултип по центру выделенного текста
             const tooltipX = rect.left + rect.width / 2;
-            // Позиционируем тултип над выделенным текстом
+
             const tooltipY = rect.top;
 
             console.log("Setting tooltip position (absolute):", {
@@ -190,17 +194,27 @@ export function OutputSection({
     async (preset: string) => {
       if (!selectedText || selectionStart === -1 || selectionEnd === -1) return;
 
+      const textValidation = validateInput(selectedText);
+      if (!textValidation.isValid) {
+        toast.error(textValidation.error || "Invalid selected text");
+        return;
+      }
+
+      const presetValidation = validateInput(preset);
+      if (!presetValidation.isValid) {
+        toast.error("Invalid transformation preset");
+        return;
+      }
+
       try {
-        // Get the current session ID from cookies if available
-        let sessionId = null;
-        const cookies = document.cookie.split(";");
-        for (const cookie of cookies) {
-          const [name, value] = cookie.trim().split("=");
-          if (name === "currentSessionId") {
-            sessionId = value;
-            break;
-          }
-        }
+        const getCookieValue = (name: string) => {
+          const value = `; ${document.cookie}`;
+          const parts = value.split(`; ${name}=`);
+          if (parts.length === 2) return parts.pop()?.split(";").shift();
+          return null;
+        };
+
+        const sessionId = getCookieValue("currentSessionId");
 
         const response = await fetch("/api/transform/selection", {
           method: "POST",
@@ -231,6 +245,12 @@ export function OutputSection({
           outputText.substring(selectionEnd);
 
         setOutputText(newText);
+
+        const newSessionId = getCookieValue("currentSessionId");
+        if (newSessionId && newSessionId !== sessionId) {
+          console.log("New session created with ID:", newSessionId);
+        }
+
         handleCloseTooltip();
         toast.success("Selection transformed!");
       } catch (err) {

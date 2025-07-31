@@ -126,10 +126,9 @@ export function InputSection({ onTransform, isLoading }: InputSectionProps) {
 
       setPreviousInputText(inputText);
     }
-  }, [inputText, currentSessionId]);
+  }, [inputText, currentSessionId, previousInputText]);
 
-  // Function to deactivate all active sessions
-  const deactivateActiveSessions = async () => {
+  const deactivateActiveSessions = useCallback(async () => {
     try {
       await fetch("/api/history/sessions/deactivate", {
         method: "POST",
@@ -140,7 +139,7 @@ export function InputSection({ onTransform, isLoading }: InputSectionProps) {
     } catch (error) {
       console.error("Failed to deactivate sessions:", error);
     }
-  };
+  }, []);
 
   const handleLanguageChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -161,15 +160,21 @@ export function InputSection({ onTransform, isLoading }: InputSectionProps) {
     clearAll();
     setCurrentSessionId(null);
     deactivateActiveSessions();
-  }, [clearAll]);
+  }, [clearAll, deactivateActiveSessions]);
 
   const inputWordCount = getWordCount(inputText);
   const inputCharCount = getCharacterCount(inputText);
 
   const handleTransformClick = useCallback(async () => {
-    const validation = validateInput(inputText);
-    if (!validation.isValid) {
-      toast.error(validation.error || "Invalid input");
+    const inputValidation = validateInput(inputText);
+    if (!inputValidation.isValid) {
+      toast.error(inputValidation.error || "Invalid input");
+      return;
+    }
+
+    const instructionValidation = validateInput(instruction);
+    if (!instructionValidation.isValid) {
+      toast.error(instructionValidation.error || "Invalid instruction");
       return;
     }
 
@@ -181,26 +186,30 @@ export function InputSection({ onTransform, isLoading }: InputSectionProps) {
     try {
       await deactivateActiveSessions();
 
+      console.log("Clearing session ID before transform");
       setCurrentSessionId(null);
-
-      localStorage.removeItem("currentSessionId");
       document.cookie =
-        "currentSessionId=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        "currentSessionId=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      localStorage.removeItem("currentSessionId");
 
       await onTransform();
 
-      try {
-        const response = await fetch("/api/history/sessions?limit=1");
-        if (response.ok) {
-          const data = await response.json();
-          if (data.sessions && data.sessions.length > 0) {
-            const newSessionId = data.sessions[0].id;
-            setCurrentSessionId(newSessionId);
-            localStorage.setItem("currentSessionId", newSessionId);
-          }
-        }
-      } catch (error) {
-        console.error("Failed to fetch session ID:", error);
+      const getCookieValue = (name: string) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop()?.split(";").shift();
+        return null;
+      };
+
+      const newSessionId = getCookieValue("currentSessionId");
+      if (newSessionId) {
+        setCurrentSessionId(newSessionId);
+        localStorage.setItem("currentSessionId", newSessionId);
+        console.log("New session created with ID:", newSessionId);
+      } else {
+        console.warn("No session ID found in cookies after transform");
+        setCurrentSessionId(null);
+        localStorage.removeItem("currentSessionId");
       }
     } catch (error) {
       console.error("Transform error:", error);

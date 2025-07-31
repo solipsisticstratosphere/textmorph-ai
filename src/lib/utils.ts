@@ -97,7 +97,7 @@ export function validateInput(text: string): {
   isValid: boolean;
   error?: string;
 } {
-  if (!text.trim()) {
+  if (!text || !text.trim()) {
     return { isValid: false, error: "Please enter some text to transform" };
   }
 
@@ -105,6 +105,16 @@ export function validateInput(text: string): {
     return {
       isValid: false,
       error: "Text is too long. Please limit to 10,000 characters.",
+    };
+  }
+
+  const sqlInjectionPattern =
+    /('--)|(\b(ALTER|CREATE|DELETE|DROP|EXEC(UTE){0,1}|INSERT( +INTO){0,1}|MERGE|SELECT|UPDATE|UNION( +ALL){0,1})\b)/i;
+  if (sqlInjectionPattern.test(text)) {
+    return {
+      isValid: false,
+      error:
+        "Invalid input detected. Please remove SQL keywords or special characters.",
     };
   }
 
@@ -136,3 +146,28 @@ export function estimateReadingTime(text: string): number {
 export const isValidName = (name: string): boolean => {
   return /^[A-Za-zÀ-ÖØ-öø-ÿ\s\-]+$/.test(name);
 };
+
+/**
+ * Sanitizes input text to prevent XSS attacks
+ * @param text The text to sanitize
+ * @returns Sanitized text
+ */
+export function sanitizeInput(text: string): string {
+  if (!text) return "";
+  return text
+
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+
+    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, "")
+
+    .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, "")
+    .replace(/<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, "")
+
+    .replace(/on\w+="[^"]*"/gi, "")
+    .replace(/on\w+='[^']*'/gi, "")
+
+    .replace(/javascript:[^\s"'<>]*(?=[\s"'<>])/gi, "")
+
+    .replace(/data:[^\s"'<>]*(?=[\s"'<>])/gi, "")
+    .trim();
+}
