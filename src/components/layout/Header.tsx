@@ -23,7 +23,6 @@ export function Header({ onMenuToggle, showMobileMenu = false }: HeaderProps) {
     setShowUserMenu(false);
   };
 
-  // Close user menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -89,11 +88,11 @@ export function Header({ onMenuToggle, showMobileMenu = false }: HeaderProps) {
           </motion.div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            {["Features", "Examples", "Pricing", "Help"].map((item, index) => (
+          <nav className="hidden md:flex items-center space-x-10">
+            {["Features", "Pricing", "Help"].map((item, index) => (
               <motion.a
                 key={item}
-                href={`#${item.toLowerCase()}`}
+                href={`${item.toLowerCase()}`}
                 className="text-slate-600 hover:text-cyan-600 transition-all duration-200 font-medium relative group"
                 variants={{
                   hidden: { opacity: 0, y: -10 },
@@ -284,22 +283,20 @@ export function Header({ onMenuToggle, showMobileMenu = false }: HeaderProps) {
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <nav className="flex flex-col space-y-4">
-                {["Features", "Examples", "Pricing", "Help"].map(
-                  (item, index) => (
-                    <motion.a
-                      key={item}
-                      href={`#${item.toLowerCase()}`}
-                      className="text-slate-600 hover:text-cyan-600 transition-colors duration-200 px-2 py-2 rounded-lg hover:bg-white/50 font-medium"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.2, delay: index * 0.1 }}
-                      whileHover={{ x: 4 }}
-                    >
-                      {item}
-                    </motion.a>
-                  )
-                )}
+              <nav className="flex flex-col space-y-6">
+                {["Features", "Pricing", "Help"].map((item, index) => (
+                  <motion.a
+                    key={item}
+                    href={`${item.toLowerCase()}`}
+                    className="text-slate-600 hover:text-cyan-600 transition-colors duration-200 px-2 py-2 rounded-lg hover:bg-white/50 font-medium"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.2, delay: index * 0.1 }}
+                    whileHover={{ x: 4 }}
+                  >
+                    {item}
+                  </motion.a>
+                ))}
                 <div className="flex flex-col space-y-3 pt-4 border-t border-white/20">
                   {isLoading ? (
                     <div className="h-8 w-full bg-slate-200 animate-pulse rounded-md"></div>

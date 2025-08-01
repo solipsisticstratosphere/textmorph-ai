@@ -1,15 +1,45 @@
 "use client";
 
 import { motion } from "framer-motion";
-import {
-  FileText,
-  Scale,
-  AlertTriangle,
-  Users,
-  Zap,
-  Shield,
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import dynamic from "next/dynamic";
+
+const FileText = dynamic(
+  () => import("lucide-react").then((mod) => mod.FileText),
+  { ssr: false }
+);
+const Scale = dynamic(() => import("lucide-react").then((mod) => mod.Scale), {
+  ssr: false,
+});
+const AlertTriangle = dynamic(
+  () => import("lucide-react").then((mod) => mod.AlertTriangle),
+  { ssr: false }
+);
+const Users = dynamic(() => import("lucide-react").then((mod) => mod.Users), {
+  ssr: false,
+});
+const Zap = dynamic(() => import("lucide-react").then((mod) => mod.Zap), {
+  ssr: false,
+});
+const Shield = dynamic(() => import("lucide-react").then((mod) => mod.Shield), {
+  ssr: false,
+});
+
+const Card = dynamic(
+  () => import("@/components/ui/Card").then((mod) => mod.Card),
+  { ssr: false }
+);
+const CardContent = dynamic(
+  () => import("@/components/ui/Card").then((mod) => mod.CardContent),
+  { ssr: false }
+);
+const CardHeader = dynamic(
+  () => import("@/components/ui/Card").then((mod) => mod.CardHeader),
+  { ssr: false }
+);
+const CardTitle = dynamic(
+  () => import("@/components/ui/Card").then((mod) => mod.CardTitle),
+  { ssr: false }
+);
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -137,55 +167,7 @@ const sections = [
 
 export default function TermsOfServicePage() {
   return (
-    <motion.div
-      className="min-h-screen flex flex-col relative overflow-hidden"
-      variants={{
-        animate: {
-          background: [
-            "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 25%, #bae6fd 50%, #7dd3fc 75%, #38bdf8 100%)",
-            "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 25%, #bae6fd 50%, #0ea5e9 75%, #0284c7 100%)",
-            "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 25%, #bae6fd 50%, #7dd3fc 75%, #38bdf8 100%)",
-          ],
-          transition: {
-            duration: 8,
-            repeat: Number.POSITIVE_INFINITY,
-            repeatType: "reverse",
-            ease: "easeInOut",
-          },
-        },
-      }}
-      animate="animate"
-    >
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-cyan-400/30 to-blue-600/30 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.2, 1],
-            rotate: [0, 180, 360],
-            opacity: [0.3, 0.5, 0.3],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Number.POSITIVE_INFINITY,
-            ease: "easeInOut",
-          }}
-        />
-        <motion.div
-          className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-tr from-teal-400/30 to-cyan-600/30 rounded-full blur-3xl"
-          animate={{
-            scale: [1.2, 1, 1.2],
-            rotate: [360, 180, 0],
-            opacity: [0.5, 0.3, 0.5],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Number.POSITIVE_INFINITY,
-            ease: "easeInOut",
-          }}
-        />
-      </div>
-
+    <div className="min-h-screen flex flex-col relative overflow-hidden">
       <motion.div
         initial="initial"
         animate="animate"
@@ -375,6 +357,6 @@ export default function TermsOfServicePage() {
           </motion.div>
         </main>
       </motion.div>
-    </motion.div>
+    </div>
   );
 }

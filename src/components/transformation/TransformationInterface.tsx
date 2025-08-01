@@ -1,15 +1,34 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, lazy, Suspense } from "react";
 import { motion } from "framer-motion";
 import { useTransformationStore } from "@/lib/store";
 import type { Language } from "@/types";
-import { InputSection } from "./components/InputSection";
-import { OutputSection } from "./components/OutputSection";
-import { PresetSelector } from "./components/PresetSelector";
-import { TextDashboard } from "./components/TextDashboard";
-import { Header } from "./components/Header";
 import toast from "react-hot-toast";
+
+const InputSection = lazy(() =>
+  import("./components/InputSection").then((mod) => ({
+    default: mod.InputSection,
+  }))
+);
+const OutputSection = lazy(() =>
+  import("./components/OutputSection").then((mod) => ({
+    default: mod.OutputSection,
+  }))
+);
+const PresetSelector = lazy(() =>
+  import("./components/PresetSelector").then((mod) => ({
+    default: mod.PresetSelector,
+  }))
+);
+const TextDashboard = lazy(() =>
+  import("./components/TextDashboard").then((mod) => ({
+    default: mod.TextDashboard,
+  }))
+);
+const Header = lazy(() =>
+  import("./components/Header").then((mod) => ({ default: mod.Header }))
+);
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -93,6 +112,8 @@ export function TransformationInterface() {
     setIsLoading(true);
 
     try {
+      const scrollPosition = window.scrollY;
+
       const response = await fetch("/api/transform", {
         method: "POST",
         headers: {
@@ -116,6 +137,13 @@ export function TransformationInterface() {
         setDetectedLanguage(data.detected_language);
       }
       toast.success("Text transformed successfully!");
+
+      setTimeout(() => {
+        window.scrollTo({
+          top: scrollPosition,
+          behavior: "instant",
+        });
+      }, 0);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "An error occurred";
@@ -133,24 +161,50 @@ export function TransformationInterface() {
       animate="visible"
     >
       {/* Header */}
-      <Header />
+      <Suspense
+        fallback={
+          <div className="h-16 w-full animate-pulse bg-slate-200 rounded-lg"></div>
+        }
+      >
+        <Header />
+      </Suspense>
 
       {/* Dashboard Modal */}
-      <TextDashboard isOpen={showDashboard} onClose={toggleDashboard} />
+      <Suspense fallback={null}>
+        <TextDashboard isOpen={showDashboard} onClose={toggleDashboard} />
+      </Suspense>
 
       {/* Quick Presets */}
-      <PresetSelector />
+      <Suspense
+        fallback={
+          <div className="h-24 w-full animate-pulse bg-slate-200 rounded-lg"></div>
+        }
+      >
+        <PresetSelector />
+      </Suspense>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Input Section */}
-        <InputSection onTransform={handleTransform} isLoading={isLoading} />
+        <Suspense
+          fallback={
+            <div className="h-96 w-full animate-pulse bg-slate-200 rounded-lg"></div>
+          }
+        >
+          <InputSection onTransform={handleTransform} isLoading={isLoading} />
+        </Suspense>
 
         {/* Output Section */}
-        <OutputSection
-          toggleDashboard={toggleDashboard}
-          detectedLanguage={detectedLanguage}
-          languages={languages}
-        />
+        <Suspense
+          fallback={
+            <div className="h-96 w-full animate-pulse bg-slate-200 rounded-lg"></div>
+          }
+        >
+          <OutputSection
+            toggleDashboard={toggleDashboard}
+            detectedLanguage={detectedLanguage}
+            languages={languages}
+          />
+        </Suspense>
       </div>
     </motion.div>
   );

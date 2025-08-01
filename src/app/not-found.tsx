@@ -1,13 +1,51 @@
 "use client";
 
 import type React from "react";
-
-import { motion } from "framer-motion";
-import { Search, Home, ArrowLeft, Compass } from "lucide-react";
-import { Button } from "@/components/ui/Button";
-import { Card, CardContent } from "@/components/ui/Card";
-import { Input } from "@/components/ui/Input";
 import { useState } from "react";
+import dynamic from "next/dynamic";
+import { motion } from "framer-motion";
+
+const Search = dynamic(
+  () => import("lucide-react").then((mod) => ({ default: mod.Search })),
+  {
+    ssr: false,
+  }
+);
+const Home = dynamic(
+  () => import("lucide-react").then((mod) => ({ default: mod.Home })),
+  {
+    ssr: false,
+  }
+);
+const ArrowLeft = dynamic(
+  () => import("lucide-react").then((mod) => ({ default: mod.ArrowLeft })),
+  { ssr: false }
+);
+const Compass = dynamic(
+  () => import("lucide-react").then((mod) => ({ default: mod.Compass })),
+  { ssr: false }
+);
+
+const Button = dynamic(
+  () =>
+    import("@/components/ui/Button").then((mod) => ({ default: mod.Button })),
+  { ssr: false }
+);
+const Card = dynamic(
+  () => import("@/components/ui/Card").then((mod) => ({ default: mod.Card })),
+  { ssr: false }
+);
+const CardContent = dynamic(
+  () =>
+    import("@/components/ui/Card").then((mod) => ({
+      default: mod.CardContent,
+    })),
+  { ssr: false }
+);
+const Input = dynamic(
+  () => import("@/components/ui/Input").then((mod) => ({ default: mod.Input })),
+  { ssr: false }
+);
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -43,7 +81,7 @@ export default function NotFound() {
           }}
           transition={{
             duration: 20,
-            repeat: Number.POSITIVE_INFINITY,
+            repeat: Infinity,
             ease: "easeInOut",
           }}
         />
@@ -56,7 +94,7 @@ export default function NotFound() {
           }}
           transition={{
             duration: 25,
-            repeat: Number.POSITIVE_INFINITY,
+            repeat: Infinity,
             ease: "easeInOut",
           }}
         />
@@ -89,7 +127,7 @@ export default function NotFound() {
                   rotate: [-3, 3, -3],
                   transition: {
                     duration: 6,
-                    repeat: Number.POSITIVE_INFINITY,
+                    repeat: Infinity,
                     ease: "easeInOut",
                   },
                 },
@@ -103,7 +141,7 @@ export default function NotFound() {
                     scale: [1, 1.05, 1],
                     transition: {
                       duration: 2,
-                      repeat: Number.POSITIVE_INFINITY,
+                      repeat: Infinity,
                       ease: "easeInOut",
                     },
                   },
@@ -120,7 +158,7 @@ export default function NotFound() {
                 }}
                 transition={{
                   duration: 3,
-                  repeat: Number.POSITIVE_INFINITY,
+                  repeat: Infinity,
                   ease: "easeInOut",
                 }}
               >
