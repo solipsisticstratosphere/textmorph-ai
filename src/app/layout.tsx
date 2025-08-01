@@ -8,16 +8,12 @@ const inter = Inter({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-inter",
-  preload: true,
-  fallback: ["system-ui", "Arial"],
 });
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-mono",
-  preload: false,
-  fallback: ["monospace"],
 });
 
 export const viewport: Viewport = {

@@ -1,44 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import dynamic from "next/dynamic";
-
-const Shield = dynamic(() => import("lucide-react").then((mod) => mod.Shield), {
-  ssr: false,
-});
-const Eye = dynamic(() => import("lucide-react").then((mod) => mod.Eye), {
-  ssr: false,
-});
-const Lock = dynamic(() => import("lucide-react").then((mod) => mod.Lock), {
-  ssr: false,
-});
-const Database = dynamic(
-  () => import("lucide-react").then((mod) => mod.Database),
-  { ssr: false }
-);
-const Users = dynamic(() => import("lucide-react").then((mod) => mod.Users), {
-  ssr: false,
-});
-const Mail = dynamic(() => import("lucide-react").then((mod) => mod.Mail), {
-  ssr: false,
-});
-
-const Card = dynamic(
-  () => import("@/components/ui/Card").then((mod) => mod.Card),
-  { ssr: false }
-);
-const CardContent = dynamic(
-  () => import("@/components/ui/Card").then((mod) => mod.CardContent),
-  { ssr: false }
-);
-const CardHeader = dynamic(
-  () => import("@/components/ui/Card").then((mod) => mod.CardHeader),
-  { ssr: false }
-);
-const CardTitle = dynamic(
-  () => import("@/components/ui/Card").then((mod) => mod.CardTitle),
-  { ssr: false }
-);
+import { Shield, Eye, Lock, Database, Users, Mail } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 
 const containerVariants = {
   hidden: { opacity: 0 },

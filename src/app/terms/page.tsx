@@ -1,45 +1,15 @@
 "use client";
 
 import { motion } from "framer-motion";
-import dynamic from "next/dynamic";
-
-const FileText = dynamic(
-  () => import("lucide-react").then((mod) => mod.FileText),
-  { ssr: false }
-);
-const Scale = dynamic(() => import("lucide-react").then((mod) => mod.Scale), {
-  ssr: false,
-});
-const AlertTriangle = dynamic(
-  () => import("lucide-react").then((mod) => mod.AlertTriangle),
-  { ssr: false }
-);
-const Users = dynamic(() => import("lucide-react").then((mod) => mod.Users), {
-  ssr: false,
-});
-const Zap = dynamic(() => import("lucide-react").then((mod) => mod.Zap), {
-  ssr: false,
-});
-const Shield = dynamic(() => import("lucide-react").then((mod) => mod.Shield), {
-  ssr: false,
-});
-
-const Card = dynamic(
-  () => import("@/components/ui/Card").then((mod) => mod.Card),
-  { ssr: false }
-);
-const CardContent = dynamic(
-  () => import("@/components/ui/Card").then((mod) => mod.CardContent),
-  { ssr: false }
-);
-const CardHeader = dynamic(
-  () => import("@/components/ui/Card").then((mod) => mod.CardHeader),
-  { ssr: false }
-);
-const CardTitle = dynamic(
-  () => import("@/components/ui/Card").then((mod) => mod.CardTitle),
-  { ssr: false }
-);
+import {
+  FileText,
+  Scale,
+  AlertTriangle,
+  Users,
+  Zap,
+  Shield,
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 
 const containerVariants = {
   hidden: { opacity: 0 },

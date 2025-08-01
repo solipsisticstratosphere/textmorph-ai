@@ -1,80 +1,25 @@
 "use client";
 
 import type React from "react";
+
 import { useState } from "react";
-import dynamic from "next/dynamic";
+import { motion, AnimatePresence } from "framer-motion";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
+import { Card, CardContent } from "@/components/ui/Card";
 import Link from "next/link";
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  UserPlus,
+  Check,
+  X,
+  User,
+} from "lucide-react";
 import toast from "react-hot-toast";
 import { isValidName } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
-
-const Input = dynamic(
-  () => import("@/components/ui/Input").then((mod) => ({ default: mod.Input })),
-  { ssr: false }
-);
-const Button = dynamic(
-  () =>
-    import("@/components/ui/Button").then((mod) => ({ default: mod.Button })),
-  { ssr: false }
-);
-const Card = dynamic(
-  () => import("@/components/ui/Card").then((mod) => ({ default: mod.Card })),
-  { ssr: false }
-);
-const CardContent = dynamic(
-  () =>
-    import("@/components/ui/Card").then((mod) => ({
-      default: mod.CardContent,
-    })),
-  { ssr: false }
-);
-
-const Eye = dynamic(
-  () => import("lucide-react").then((mod) => ({ default: mod.Eye })),
-  {
-    ssr: false,
-  }
-);
-const EyeOff = dynamic(
-  () => import("lucide-react").then((mod) => ({ default: mod.EyeOff })),
-  {
-    ssr: false,
-  }
-);
-const Mail = dynamic(
-  () => import("lucide-react").then((mod) => ({ default: mod.Mail })),
-  {
-    ssr: false,
-  }
-);
-const Lock = dynamic(
-  () => import("lucide-react").then((mod) => ({ default: mod.Lock })),
-  {
-    ssr: false,
-  }
-);
-const UserPlus = dynamic(
-  () => import("lucide-react").then((mod) => ({ default: mod.UserPlus })),
-  { ssr: false }
-);
-const Check = dynamic(
-  () => import("lucide-react").then((mod) => ({ default: mod.Check })),
-  {
-    ssr: false,
-  }
-);
-const X = dynamic(
-  () => import("lucide-react").then((mod) => ({ default: mod.X })),
-  {
-    ssr: false,
-  }
-);
-const User = dynamic(
-  () => import("lucide-react").then((mod) => ({ default: mod.User })),
-  {
-    ssr: false,
-  }
-);
 
 const containerVariants = {
   hidden: { opacity: 0 },

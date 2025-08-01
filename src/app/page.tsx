@@ -1,14 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { lazy, Suspense } from "react";
-import Loading from "./loading";
-
-const TransformationInterface = lazy(() =>
-  import("@/components/transformation/TransformationInterface").then((mod) => ({
-    default: mod.TransformationInterface,
-  }))
-);
+import { TransformationInterface } from "@/components/transformation/TransformationInterface";
 
 const pageVariants = {
   initial: { opacity: 0, y: 20 },
@@ -28,9 +21,7 @@ export default function HomePage() {
         className="relative z-10"
       >
         <main className="flex-1">
-          <Suspense fallback={<Loading />}>
-            <TransformationInterface />
-          </Suspense>
+          <TransformationInterface />
         </main>
       </motion.div>
     </div>

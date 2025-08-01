@@ -4,42 +4,12 @@ import type React from "react";
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import dynamic from "next/dynamic";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
+import { Card, CardContent } from "@/components/ui/Card";
 import Link from "next/link";
+import { Eye, EyeOff, Mail, Lock, LogIn } from "lucide-react";
 import toast from "react-hot-toast";
-
-const Input = dynamic(
-  () => import("@/components/ui/Input").then((mod) => mod.Input),
-  { ssr: false }
-);
-const Button = dynamic(
-  () => import("@/components/ui/Button").then((mod) => mod.Button),
-  { ssr: false }
-);
-const Card = dynamic(
-  () => import("@/components/ui/Card").then((mod) => mod.Card),
-  { ssr: false }
-);
-const CardContent = dynamic(
-  () => import("@/components/ui/Card").then((mod) => mod.CardContent),
-  { ssr: false }
-);
-
-const Eye = dynamic(() => import("lucide-react").then((mod) => mod.Eye), {
-  ssr: false,
-});
-const EyeOff = dynamic(() => import("lucide-react").then((mod) => mod.EyeOff), {
-  ssr: false,
-});
-const Mail = dynamic(() => import("lucide-react").then((mod) => mod.Mail), {
-  ssr: false,
-});
-const Lock = dynamic(() => import("lucide-react").then((mod) => mod.Lock), {
-  ssr: false,
-});
-const LogIn = dynamic(() => import("lucide-react").then((mod) => mod.LogIn), {
-  ssr: false,
-});
 
 const containerVariants = {
   hidden: { opacity: 0 },

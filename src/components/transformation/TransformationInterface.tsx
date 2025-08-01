@@ -1,34 +1,15 @@
 "use client";
 
-import { useState, useCallback, useEffect, lazy, Suspense } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useTransformationStore } from "@/lib/store";
 import type { Language } from "@/types";
+import { InputSection } from "./components/InputSection";
+import { OutputSection } from "./components/OutputSection";
+import { PresetSelector } from "./components/PresetSelector";
+import { TextDashboard } from "./components/TextDashboard";
+import { Header } from "./components/Header";
 import toast from "react-hot-toast";
-
-const InputSection = lazy(() =>
-  import("./components/InputSection").then((mod) => ({
-    default: mod.InputSection,
-  }))
-);
-const OutputSection = lazy(() =>
-  import("./components/OutputSection").then((mod) => ({
-    default: mod.OutputSection,
-  }))
-);
-const PresetSelector = lazy(() =>
-  import("./components/PresetSelector").then((mod) => ({
-    default: mod.PresetSelector,
-  }))
-);
-const TextDashboard = lazy(() =>
-  import("./components/TextDashboard").then((mod) => ({
-    default: mod.TextDashboard,
-  }))
-);
-const Header = lazy(() =>
-  import("./components/Header").then((mod) => ({ default: mod.Header }))
-);
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -161,50 +142,24 @@ export function TransformationInterface() {
       animate="visible"
     >
       {/* Header */}
-      <Suspense
-        fallback={
-          <div className="h-16 w-full animate-pulse bg-slate-200 rounded-lg"></div>
-        }
-      >
-        <Header />
-      </Suspense>
+      <Header />
 
       {/* Dashboard Modal */}
-      <Suspense fallback={null}>
-        <TextDashboard isOpen={showDashboard} onClose={toggleDashboard} />
-      </Suspense>
+      <TextDashboard isOpen={showDashboard} onClose={toggleDashboard} />
 
       {/* Quick Presets */}
-      <Suspense
-        fallback={
-          <div className="h-24 w-full animate-pulse bg-slate-200 rounded-lg"></div>
-        }
-      >
-        <PresetSelector />
-      </Suspense>
+      <PresetSelector />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Input Section */}
-        <Suspense
-          fallback={
-            <div className="h-96 w-full animate-pulse bg-slate-200 rounded-lg"></div>
-          }
-        >
-          <InputSection onTransform={handleTransform} isLoading={isLoading} />
-        </Suspense>
+        <InputSection onTransform={handleTransform} isLoading={isLoading} />
 
         {/* Output Section */}
-        <Suspense
-          fallback={
-            <div className="h-96 w-full animate-pulse bg-slate-200 rounded-lg"></div>
-          }
-        >
-          <OutputSection
-            toggleDashboard={toggleDashboard}
-            detectedLanguage={detectedLanguage}
-            languages={languages}
-          />
-        </Suspense>
+        <OutputSection
+          toggleDashboard={toggleDashboard}
+          detectedLanguage={detectedLanguage}
+          languages={languages}
+        />
       </div>
     </motion.div>
   );
