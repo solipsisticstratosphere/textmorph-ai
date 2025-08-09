@@ -18,15 +18,17 @@ import { validateInput, getWordCount, getCharacterCount } from "@/lib/utils";
 import type { Language } from "@/types";
 import { useTypewriter } from "react-simple-typewriter";
 import toast from "react-hot-toast";
+import { useAuth } from "@/lib/auth-context";
 
 interface InputSectionProps {
   onTransform: () => Promise<void>;
   isLoading: boolean;
+  isGuestLimitReached?: boolean;
 }
 function pluralize(count: number, singular: string, plural: string) {
   return `${count} ${count === 1 ? singular : plural}`;
 }
-export function InputSection({ onTransform, isLoading }: InputSectionProps) {
+export function InputSection({ onTransform, isLoading, isGuestLimitReached = false }: InputSectionProps) {
   const {
     inputText,
     instruction,
@@ -39,6 +41,8 @@ export function InputSection({ onTransform, isLoading }: InputSectionProps) {
     clearInputText,
     clearAll,
   } = useTransformationStore();
+
+  const { user } = useAuth();
 
   const [languages, setLanguages] = useState<Language[]>([]);
   const [isLoadingLanguages, setIsLoadingLanguages] = useState(true);
@@ -122,6 +126,7 @@ export function InputSection({ onTransform, isLoading }: InputSectionProps) {
           inputText.substring(0, 20) !== previousInputText.substring(0, 20));
 
       if (isDifferentText) {
+      
       }
 
       setPreviousInputText(inputText);
@@ -129,6 +134,7 @@ export function InputSection({ onTransform, isLoading }: InputSectionProps) {
   }, [inputText, currentSessionId, previousInputText]);
 
   const deactivateActiveSessions = useCallback(async () => {
+    if (!user) return; 
     try {
       await fetch("/api/history/sessions/deactivate", {
         method: "POST",
@@ -139,7 +145,7 @@ export function InputSection({ onTransform, isLoading }: InputSectionProps) {
     } catch (error) {
       console.error("Failed to deactivate sessions:", error);
     }
-  }, []);
+  }, [user]);
 
   const handleLanguageChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -402,15 +408,24 @@ export function InputSection({ onTransform, isLoading }: InputSectionProps) {
           </div>
           <div className="flex space-x-3">
             <motion.div className="flex-1">
-              <Button
-                onClick={handleTransformClick}
-                disabled={!inputText.trim() || !instruction.trim() || isLoading}
-                isLoading={isLoading}
-                className="w-full text-base py-3"
+              <span
+                className="block w-full"
+                title={
+                  isGuestLimitReached
+                    ? "Free generation limit reached. Create an account to continue."
+                    : undefined
+                }
               >
-                <Wand2 className="w-5 h-5 mr-2" />
-                {isLoading ? "Transforming..." : "Transform Text"}
-              </Button>
+                <Button
+                  onClick={handleTransformClick}
+                  disabled={!inputText.trim() || !instruction.trim() || isLoading || isGuestLimitReached}
+                  isLoading={isLoading}
+                  className="w-full text-base py-3"
+                >
+                  <Wand2 className="w-5 h-5 mr-2" />
+                  {isLoading ? "Transforming..." : "Transform Text"}
+                </Button>
+              </span>
             </motion.div>
             <motion.div whileTap={{ scale: 0.95 }}>
               <Button

@@ -41,60 +41,39 @@ export function Modal({
       }
     };
 
-    // Prevent scrolling when modal is open
-    const preventScroll = () => {
-      if (isOpen) {
-        // Save current scroll position
-        scrollPositionRef.current = window.scrollY;
+    window.addEventListener("keydown", handleEscKey);
 
-        // Apply styles to lock scrolling
-        document.documentElement.style.overflow = "hidden"; // Lock html element
-        document.body.style.overflow = "hidden";
-        document.body.style.paddingRight = `${
-          window.innerWidth - document.documentElement.clientWidth
-        }px`; // Prevent layout shift
-        document.body.dataset.scrollPosition = String(
-          scrollPositionRef.current
-        );
-      } else {
-        // Restore scrolling
+    if (isOpen) {
+
+      scrollPositionRef.current = window.scrollY;
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.overflow = "hidden";
+      document.body.style.paddingRight = `${
+        window.innerWidth - document.documentElement.clientWidth
+      }px`;
+
+      return () => {
+        window.removeEventListener("keydown", handleEscKey);
+
         document.documentElement.style.overflow = "";
         document.body.style.overflow = "";
         document.body.style.paddingRight = "";
-
-        // Restore scroll position with a small delay to ensure DOM updates
-        const scrollY = Number(document.body.dataset.scrollPosition || "0");
+ 
         setTimeout(() => {
           window.scrollTo({
-            top: scrollY,
-            behavior: "auto", // Use instant scroll to avoid animation
+            top: scrollPositionRef.current,
+            behavior: "auto",
           });
-        }, 10);
-      }
-    };
-
-    window.addEventListener("keydown", handleEscKey);
-    preventScroll();
+        }, 0);
+      };
+    }
 
     return () => {
       window.removeEventListener("keydown", handleEscKey);
-      // Make sure to restore scrolling when component unmounts
-      document.documentElement.style.overflow = "";
-      document.body.style.overflow = "";
-      document.body.style.paddingRight = "";
-
-      // Restore scroll position if component unmounts while modal is open
-      if (isOpen) {
-        const scrollY = Number(document.body.dataset.scrollPosition || "0");
-        window.scrollTo({
-          top: scrollY,
-          behavior: "auto",
-        });
-      }
     };
   }, [isOpen, onClose]);
 
-  // Handle click outside modal to close
+
   const handleClickOutside = (e: React.MouseEvent<HTMLDivElement>) => {
     if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
       onClose();

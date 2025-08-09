@@ -10,6 +10,10 @@ import { PresetSelector } from "./components/PresetSelector";
 import { TextDashboard } from "./components/TextDashboard";
 import { Header } from "./components/Header";
 import toast from "react-hot-toast";
+import { Modal } from "@/components/ui/Modal";
+import Link from "next/link";
+import { Button } from "@/components/ui/Button";
+import { useAuth } from "@/lib/auth-context";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -34,10 +38,36 @@ export function TransformationInterface() {
     setEditableText,
   } = useTransformationStore();
 
+  const { user } = useAuth();
+
   const [isLoading, setIsLoading] = useState(false);
   const [languages, setLanguages] = useState<Language[]>([]);
   const [detectedLanguage, setDetectedLanguage] = useState<string | null>(null);
   const [showDashboard, setShowDashboard] = useState(false);
+
+
+  const [showGuestWarningModal, setShowGuestWarningModal] = useState(false);
+  const [showGuestLimitModal, setShowGuestLimitModal] = useState(false);
+  const [guestGenerationCount, setGuestGenerationCount] = useState(0);
+
+  const FREE_GENERATION_LIMIT = 5;
+  const WARNING_AFTER_COUNT = 3;
+
+
+  useEffect(() => {
+    if (!user) {
+      const count = Number.parseInt(
+        (typeof window !== "undefined" && localStorage.getItem("guestGenerationCount")) ||
+          "0",
+        10
+      );
+      setGuestGenerationCount(Number.isFinite(count) ? count : 0);
+    } else {
+      setGuestGenerationCount(0);
+    }
+  }, [user]);
+
+  const isGuestLimitReached = !user && guestGenerationCount >= FREE_GENERATION_LIMIT;
 
   useEffect(() => {
     const fetchLanguages = async () => {
@@ -93,6 +123,20 @@ export function TransformationInterface() {
     setIsLoading(true);
 
     try {
+
+      if (!user) {
+        const currentCount = Number.parseInt(
+          (typeof window !== "undefined" && localStorage.getItem("guestGenerationCount")) ||
+            "0",
+          10
+        );
+        if (currentCount >= FREE_GENERATION_LIMIT) {
+          setShowGuestLimitModal(true);
+          setIsLoading(false);
+          return;
+        }
+      }
+
       const scrollPosition = window.scrollY;
 
       const response = await fetch("/api/transform", {
@@ -119,20 +163,40 @@ export function TransformationInterface() {
       }
       toast.success("Text transformed successfully!");
 
+     
+      if (!user) {
+        const currentCount = Number.parseInt(
+          (typeof window !== "undefined" && localStorage.getItem("guestGenerationCount")) ||
+            "0",
+          10
+        );
+        const newCount = currentCount + 1;
+        localStorage.setItem("guestGenerationCount", String(newCount));
+        setGuestGenerationCount(newCount);
+        if (newCount === WARNING_AFTER_COUNT) {
+          setShowGuestWarningModal(true);
+        }
+        if (newCount >= FREE_GENERATION_LIMIT) {
+          toast("You have used all 5 free generations.");
+        }
+      } else if (user && !user.isPro) {
+
+        window.dispatchEvent(new Event("quota:update"));
+      }
+
       setTimeout(() => {
         window.scrollTo({
           top: scrollPosition,
-          behavior: "instant",
+          behavior: "auto",
         });
       }, 0);
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "An error occurred";
+      const errorMessage = err instanceof Error ? err.message : "An error occurred";
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
-  }, [inputText, instruction, temperature, selectedLanguage, setOutputText]);
+  }, [user, inputText, instruction, temperature, selectedLanguage, setOutputText]);
 
   return (
     <motion.div
@@ -152,15 +216,65 @@ export function TransformationInterface() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Input Section */}
-        <InputSection onTransform={handleTransform} isLoading={isLoading} />
+        <InputSection
+          onTransform={handleTransform}
+          isLoading={isLoading}
+          isGuestLimitReached={isGuestLimitReached}
+        />
 
         {/* Output Section */}
         <OutputSection
           toggleDashboard={toggleDashboard}
           detectedLanguage={detectedLanguage}
           languages={languages}
+          onGuestWarning={() => setShowGuestWarningModal(true)}
+          onGuestLimit={() => setShowGuestLimitModal(true)}
+          freeLimit={FREE_GENERATION_LIMIT}
+          warningAfterCount={WARNING_AFTER_COUNT}
         />
       </div>
+
+      {/* Guest warning modal after 3rd generation */}
+      <Modal
+        isOpen={showGuestWarningModal}
+        onClose={() => setShowGuestWarningModal(false)}
+        title="You have used 3 free generations"
+        footer={
+          <div className="flex justify-end gap-3">
+            <Button variant="secondary" onClick={() => setShowGuestWarningModal(false)}>
+              Continue
+            </Button>
+            <Link href="/login">
+              <Button variant="primary">Sign in</Button>
+            </Link>
+          </div>
+        }
+      >
+        <p className="text-slate-700">
+          Guests have access to 5 text generations. You have 2 remaining. Sign in to lift the limit.
+        </p>
+      </Modal>
+
+      {/* Guest hard limit modal at 5 */}
+      <Modal
+        isOpen={showGuestLimitModal}
+        onClose={() => setShowGuestLimitModal(false)}
+        title="Free generation limit reached"
+        footer={
+          <div className="flex justify-end gap-3">
+            <Button variant="secondary" onClick={() => setShowGuestLimitModal(false)}>
+              Close
+            </Button>
+            <Link href="/login">
+              <Button variant="primary">Sign in</Button>
+            </Link>
+          </div>
+        }
+      >
+        <p className="text-slate-700">
+          You have reached the limit of 5 free generations available to guests. Sign in or register to continue without limits.
+        </p>
+      </Modal>
     </motion.div>
   );
 }

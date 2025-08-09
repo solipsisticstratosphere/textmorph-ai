@@ -58,13 +58,6 @@ export const useTransformationStore = create<TransformationState>()(
       clearInputText: () => set({ inputText: "" }),
       clearOutputText: () => {
         set({ outputText: "", editableText: "" });
-
-        fetch("/api/history/sessions/deactivate", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }).catch((err) => console.error("Failed to deactivate sessions:", err));
       },
       clearAll: () => {
         set({
@@ -77,25 +70,9 @@ export const useTransformationStore = create<TransformationState>()(
           selectionStart: -1,
           selectionEnd: -1,
         });
-
-        fetch("/api/history/sessions/deactivate", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }).catch((err) => console.error("Failed to deactivate sessions:", err));
       },
       deactivateSessions: async () => {
-        try {
-          await fetch("/api/history/sessions/deactivate", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          });
-        } catch (err) {
-          console.error("Failed to deactivate sessions:", err);
-        }
+        return;
       },
     }),
     {

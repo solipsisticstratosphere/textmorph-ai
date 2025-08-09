@@ -23,6 +23,7 @@ model User {
   updatedAt     DateTime      @updatedAt
   sessions      Session[]
   textSessions  TextSession[]
+  generationUsage GenerationUsage[]
 }
 
 model Session {
@@ -69,4 +70,17 @@ model TextRevision {
   session         TextSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   
   @@map("text_revisions")
+}
+
+/// Tracks user generation events (full-text or selection) for quota
+model GenerationUsage {
+  id        String   @id @default(cuid())
+  userId    String
+  kind      String   // "full" | "selection"
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("generation_usage")
 }

@@ -53,6 +53,13 @@ function verifyCsrfToken(request: NextRequest): boolean {
   }
 }
 
+async function countUserGenerationsLast24h(userId: string): Promise<number> {
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  return prisma.generationUsage.count({
+    where: { userId, createdAt: { gte: since } },
+  });
+}
+
 function generateSessionTitle(inputText: string, instruction: string): string {
   if (instruction && instruction.length <= 50) {
     return instruction;
@@ -175,6 +182,19 @@ export async function POST(request: NextRequest) {
     const sanitizedInputText = sanitizeInput(body.input_text);
     const sanitizedInstruction = sanitizeInput(body.transformation_instruction);
 
+
+    const authUser = await getAuthUser();
+    const DAILY_LIMIT = 50;
+    if (authUser && !authUser.isPro) {
+      const used = await countUserGenerationsLast24h(authUser.id);
+      if (used >= DAILY_LIMIT) {
+        return NextResponse.json(
+          { error: "Daily generation limit reached (50 per 24h)." },
+          { status: 429 }
+        );
+      }
+    }
+
     const aiService = AIService.getInstance();
     const supportedLanguages = aiService
       .getSupportedLanguages()
@@ -213,14 +233,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const user = await getAuthUser();
+    const user = authUser; 
 
     let currentSessionId = null;
 
     if (user && result.success) {
       try {
-        // Всегда создаем новую сессию при трансформации полного текста
-        // Игнорируем существующий sessionId из cookies или headers
         currentSessionId = await createNewSession(
           user.id,
           sanitizedInputText,
@@ -229,6 +247,20 @@ export async function POST(request: NextRequest) {
         );
       } catch (error) {
         console.error("Failed to save text session:", error);
+      }
+
+  
+      try {
+        if (!user.isPro) {
+          await prisma.generationUsage.create({
+            data: {
+              userId: user.id,
+              kind: "full",
+            },
+          });
+        }
+      } catch (err) {
+        console.error("Failed to record generation usage:", err);
       }
     }
 

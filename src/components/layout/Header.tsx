@@ -18,6 +18,64 @@ export function Header({ onMenuToggle, showMobileMenu = false }: HeaderProps) {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
+  const [quota, setQuota] = useState<
+    | { isPro: boolean; limit: number | null; used: number; remaining: number | null; nextResetAt: string | null }
+    | null
+  >(null);
+
+  const fetchQuota = async () => {
+    try {
+      if (!user) {
+        setQuota(null);
+        return;
+      }
+      const res = await fetch("/api/usage/quota");
+      if (!res.ok) {
+        setQuota(null);
+        return;
+      }
+      const data = await res.json();
+      setQuota({
+        isPro: !!data.isPro,
+        limit: data.limit ?? null,
+        used: Number(data.used || 0),
+        remaining: data.remaining ?? null,
+        nextResetAt: data.nextResetAt ?? null,
+      });
+    } catch {
+      setQuota(null);
+    }
+  };
+
+  useEffect(() => {
+    const shouldFetch = !!user && !user.isPro;
+    if (shouldFetch) {
+      fetchQuota();
+    } else {
+      setQuota(null);
+    }
+
+    const onFocus = () => {
+      if (shouldFetch) fetchQuota();
+    };
+    const onVisibility = () => {
+      if (shouldFetch && document.visibilityState === "visible") fetchQuota();
+    };
+    const onQuotaUpdate = () => {
+      if (shouldFetch) fetchQuota();
+    };
+
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("quota:update", onQuotaUpdate as EventListener);
+
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("quota:update", onQuotaUpdate as EventListener);
+    };
+  }, [user]);
+
   const handleLogout = async () => {
     await logout();
     setShowUserMenu(false);
@@ -129,7 +187,17 @@ export function Header({ onMenuToggle, showMobileMenu = false }: HeaderProps) {
                   onClick={() => setShowUserMenu(!showUserMenu)}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
+                  title={
+                    quota && !quota.isPro && quota.remaining !== null
+                      ? `Remaining: ${quota.remaining}/${quota.limit}`
+                      : undefined
+                  }
                 >
+                  {!user.isPro && quota && quota.remaining !== null && (
+                    <span className="text-xs font-semibold text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md mr-1">
+                      {quota.remaining}/{quota.limit}
+                    </span>
+                  )}
                   <div className="w-9 h-9 bg-gradient-to-br from-cyan-500 via-blue-500 to-teal-500 rounded-full flex items-center justify-center text-white shadow-md">
                     <User className="w-4 h-4" />
                   </div>
@@ -166,11 +234,15 @@ export function Header({ onMenuToggle, showMobileMenu = false }: HeaderProps) {
                             <p className="text-xs text-slate-500 truncate">
                               {user.email}
                             </p>
-                            {user.isPro && (
+                            {user.isPro ? (
                               <span className="inline-block mt-1.5 px-2 py-1 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs rounded-full font-medium shadow-sm">
                                 ✨ PRO Member
                               </span>
-                            )}
+                            ) : quota && quota.remaining !== null ? (
+                              <span className="inline-block mt-1.5 px-2 py-1 bg-slate-100 text-slate-700 text-xs rounded-full font-medium shadow-sm border border-slate-200">
+                                Remaining today: {quota.remaining}/{quota.limit}
+                              </span>
+                            ) : null}
                           </div>
                         </div>
                       </div>
@@ -316,11 +388,15 @@ export function Header({ onMenuToggle, showMobileMenu = false }: HeaderProps) {
                             </p>
                           </div>
                         </div>
-                        {user.isPro && (
+                        {user.isPro ? (
                           <span className="inline-block mt-3 px-2 py-1 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs rounded-full font-medium">
                             ✨ PRO Member
                           </span>
-                        )}
+                        ) : quota && quota.remaining !== null ? (
+                          <span className="inline-block mt-3 px-2 py-1 bg-slate-100 text-slate-700 text-xs rounded-full font-medium border border-slate-200">
+                            Remaining today: {quota.remaining}/{quota.limit}
+                          </span>
+                        ) : null}
                       </div>
                       <motion.div
                         initial={{ opacity: 0, x: -20 }}

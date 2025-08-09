@@ -33,7 +33,8 @@ export async function middleware(request: NextRequest) {
       response.headers.set("x-session-id", sessionId);
     }
 
-    return handleAuth(request, response);
+
+    return response;
   }
 
   if (isPublicPath(path)) {

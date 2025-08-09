@@ -15,11 +15,16 @@ import type { Language } from "@/types";
 import { useTypewriter } from "react-simple-typewriter";
 import toast from "react-hot-toast";
 import { SelectionTooltip } from "./SelectionTooltip";
+import { useAuth } from "@/lib/auth-context";
 
 interface OutputSectionProps {
   toggleDashboard: () => void;
   detectedLanguage: string | null;
   languages: Language[];
+  onGuestWarning?: () => void;
+  onGuestLimit?: () => void;
+  freeLimit?: number;
+  warningAfterCount?: number;
 }
 
 function pluralize(count: number, singular: string, plural: string) {
@@ -30,6 +35,10 @@ export function OutputSection({
   toggleDashboard,
   detectedLanguage,
   languages,
+  onGuestWarning,
+  onGuestLimit,
+  freeLimit = 5,
+  warningAfterCount = 3,
 }: OutputSectionProps) {
   const {
     outputText,
@@ -40,12 +49,21 @@ export function OutputSection({
     selectionStart,
     selectionEnd,
   } = useTransformationStore();
+  const { user } = useAuth();
   const [tooltipPosition, setTooltipPosition] = useState<{
     x: number;
     y: number;
   } | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const getGuestCount = () => {
+    if (typeof window === "undefined") return 0;
+    const v = Number.parseInt(localStorage.getItem("guestGenerationCount") || "0", 10);
+    return Number.isFinite(v) ? v : 0;
+  };
+
+  const isGuestLimitReached = !user && getGuestCount() >= freeLimit;
 
   useEffect(() => {
     console.log("Selection state changed:", {
@@ -67,18 +85,55 @@ export function OutputSection({
     }
   }, [outputText, setOutputText]);
 
+  const clearNativeSelection = useCallback(() => {
+    if (textareaRef.current) {
+      const pos = textareaRef.current.selectionEnd ?? 0;
+      try {
+        textareaRef.current.setSelectionRange(pos, pos);
+      } catch {
+      }
+    }
+    const selection = window.getSelection?.();
+    if (selection && selection.rangeCount > 0) {
+      try {
+        selection.removeAllRanges();
+      } catch {
+      }
+    }
+  }, []);
+
   const handleContainerClick = useCallback(
     (e: React.MouseEvent) => {
+      const winSelection = window.getSelection?.();
+      const hasSelectedText = !!winSelection && winSelection.toString().trim().length > 0;
+      const textareaHasSelection = (() => {
+        const t = textareaRef.current;
+        return !!t && t.selectionStart !== t.selectionEnd;
+      })();
+      if (hasSelectedText || textareaHasSelection) {
+        return;
+      }
+
       if (
         e.target === containerRef.current ||
         e.target === textareaRef.current
       ) {
         setTooltipPosition(null);
         setTextSelection("", -1, -1);
+        clearNativeSelection();
       }
     },
-    [setTextSelection]
+    [setTextSelection, clearNativeSelection]
   );
+
+  const handleClearOutput = useCallback(() => {
+    clearOutputText();
+    if (!user) return;
+    fetch("/api/history/sessions/deactivate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    }).catch(() => {});
+  }, [clearOutputText, user]);
 
   const outputWordCount = getWordCount(outputText);
 
@@ -188,11 +243,20 @@ export function OutputSection({
   const handleCloseTooltip = useCallback(() => {
     setTooltipPosition(null);
     setTextSelection("", -1, -1);
-  }, [setTextSelection]);
+    clearNativeSelection();
+  }, [setTextSelection, clearNativeSelection]);
 
   const handleTransformSelection = useCallback(
     async (preset: string) => {
       if (!selectedText || selectionStart === -1 || selectionEnd === -1) return;
+
+      if (!user) {
+        const currentCount = getGuestCount();
+        if (currentCount >= freeLimit) {
+          onGuestLimit?.();
+          return;
+        }
+      }
 
       const textValidation = validateInput(selectedText);
       if (!textValidation.isValid) {
@@ -253,6 +317,19 @@ export function OutputSection({
 
         handleCloseTooltip();
         toast.success("Selection transformed!");
+        if (!user) {
+          const currentCount = getGuestCount();
+          const newCount = currentCount + 1;
+          localStorage.setItem("guestGenerationCount", String(newCount));
+          if (newCount === warningAfterCount) {
+            onGuestWarning?.();
+          }
+          if (newCount >= freeLimit) {
+            toast("You have used all 5 free generations.");
+          }
+        } else if (user && !user.isPro) {
+          window.dispatchEvent(new Event("quota:update"));
+        }
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "An error occurred";
@@ -266,6 +343,11 @@ export function OutputSection({
       outputText,
       setOutputText,
       handleCloseTooltip,
+      user,
+      onGuestLimit,
+      onGuestWarning,
+      freeLimit,
+      warningAfterCount,
     ]
   );
 
@@ -327,15 +409,23 @@ export function OutputSection({
                   exit={{ opacity: 0, scale: 0.8 }}
                   className="absolute top-2 right-2"
                 >
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={clearOutputText}
-                    className="p-1 h-auto hover:text-red-600"
-                    title="Clear output text"
+                  <span
+                    title={
+                      isGuestLimitReached
+                        ? "Free generation limit reached. Create an account to continue."
+                        : "Clear output text"
+                    }
                   >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleClearOutput}
+                      className="p-1 h-auto hover:text-red-600"
+                      disabled={isGuestLimitReached}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </span>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -347,6 +437,7 @@ export function OutputSection({
                 onClose={() => {
                   setTooltipPosition(null);
                   setTextSelection("", -1, -1);
+                  clearNativeSelection();
                 }}
                 onTransform={handleTransformSelection}
                 containerRef={containerRef}

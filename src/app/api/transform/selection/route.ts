@@ -5,6 +5,11 @@ import { prisma } from "@/lib/prisma";
 import { getAuthUser } from "@/lib/auth";
 import { sanitizeInput, validateInput } from "@/lib/utils";
 
+async function countUserGenerationsLast24h(userId: string): Promise<number> {
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  return prisma.generationUsage.count({ where: { userId, createdAt: { gte: since } } });
+}
+
 export async function POST(request: Request) {
   try {
     const data = await request.json();
@@ -58,6 +63,19 @@ export async function POST(request: Request) {
       temperature: Math.max(0, Math.min(data.temperature || 0.7, 1)),
       target_language: sanitizedTargetLanguage,
     };
+
+
+    const authUser = await getAuthUser();
+    const DAILY_LIMIT = 50;
+    if (authUser && !authUser.isPro) {
+      const used = await countUserGenerationsLast24h(authUser.id);
+      if (used >= DAILY_LIMIT) {
+        return NextResponse.json(
+          { success: false, error: "Daily generation limit reached (50 per 24h)." },
+          { status: 429 }
+        );
+      }
+    }
 
     const aiService = AIService.getInstance();
     const result = await aiService.transformSelectedText(transformRequest);
@@ -138,6 +156,20 @@ export async function POST(request: Request) {
         }
       } catch (error) {
         console.error("Failed to save text revision:", error);
+      }
+
+   
+      try {
+        if (!user.isPro) {
+          await prisma.generationUsage.create({
+            data: {
+              userId: user.id,
+              kind: "selection",
+            },
+          });
+        }
+      } catch (err) {
+        console.error("Failed to record generation usage:", err);
       }
     }
 
