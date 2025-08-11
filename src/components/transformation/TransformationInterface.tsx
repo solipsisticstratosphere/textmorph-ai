@@ -152,6 +152,24 @@ export function TransformationInterface() {
         }),
       });
 
+      
+      if (response.status === 429 && user && !user.isPro) {
+       
+        try {
+          const body = await response.json();
+          const message = (body?.error || "").toString().toLowerCase();
+          if (message.includes("provider rate limit") || message.includes("rate limit")) {
+            toast("Too many requests to the AI provider. Please try again in a moment.");
+          } else {
+            toast("You've reached your daily generation limit. Upgrade to Pro to continue.");
+          }
+        } catch {
+          toast("You've reached your daily generation limit. Upgrade to Pro to continue.");
+        }
+        setIsLoading(false);
+        return;
+      }
+
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.error || "Transformation failed");
@@ -163,7 +181,7 @@ export function TransformationInterface() {
       }
       toast.success("Text transformed successfully!");
 
-     
+
       if (!user) {
         const currentCount = Number.parseInt(
           (typeof window !== "undefined" && localStorage.getItem("guestGenerationCount")) ||

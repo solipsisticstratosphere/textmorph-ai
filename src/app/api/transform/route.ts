@@ -227,9 +227,11 @@ export async function POST(request: NextRequest) {
     const result = await aiService.transformText(sanitizedRequest);
 
     if (!result.success) {
+      const isProviderRateLimit = result.error?.toLowerCase().includes("rate limit");
+      const status = isProviderRateLimit ? 429 : 500;
       return NextResponse.json(
         { error: result.error || "Transformation failed" },
-        { status: 500 }
+        { status }
       );
     }
 

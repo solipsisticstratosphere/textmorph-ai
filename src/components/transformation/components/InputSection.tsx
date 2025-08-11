@@ -172,6 +172,11 @@ export function InputSection({ onTransform, isLoading, isGuestLimitReached = fal
   const inputCharCount = getCharacterCount(inputText);
 
   const handleTransformClick = useCallback(async () => {
+    if (isGuestLimitReached) {
+      toast("Free generation limit reached. Please register an account to continue.");
+      return;
+    }
+
     const inputValidation = validateInput(inputText);
     if (!inputValidation.isValid) {
       toast.error(inputValidation.error || "Invalid input");
@@ -221,7 +226,7 @@ export function InputSection({ onTransform, isLoading, isGuestLimitReached = fal
       console.error("Transform error:", error);
       toast.error("Failed to transform text");
     }
-  }, [inputText, instruction, onTransform, deactivateActiveSessions]);
+  }, [inputText, instruction, onTransform, deactivateActiveSessions, isGuestLimitReached]);
 
   return (
     <motion.div
@@ -418,7 +423,7 @@ export function InputSection({ onTransform, isLoading, isGuestLimitReached = fal
               >
                 <Button
                   onClick={handleTransformClick}
-                  disabled={!inputText.trim() || !instruction.trim() || isLoading || isGuestLimitReached}
+                  disabled={isLoading}
                   isLoading={isLoading}
                   className="w-full text-base py-3"
                 >

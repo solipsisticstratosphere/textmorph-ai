@@ -180,8 +180,11 @@ export async function POST(request: Request) {
     responseHeaders.set("X-XSS-Protection", "1; mode=block");
     responseHeaders.set("Content-Security-Policy", "default-src 'self'");
 
+    const statusCode = result.success
+      ? 200
+      : (result.error?.toLowerCase().includes("rate limit") ? 429 : 500);
     const response = NextResponse.json(result, {
-      status: 200,
+      status: statusCode,
       headers: responseHeaders,
     });
 

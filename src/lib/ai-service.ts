@@ -249,6 +249,14 @@ export class AIService {
 
     if (!response.ok) {
       const errorText = await response.text();
+      if (response.status === 429) {
+        const retryAfter = response.headers.get("retry-after");
+        const seconds = retryAfter ? parseInt(retryAfter, 10) : undefined;
+        const friendly = seconds
+          ? `Provider rate limit reached. Please try again in ${seconds} seconds.`
+          : "Provider rate limit reached. Please try again shortly.";
+        throw new Error(friendly);
+      }
       throw new Error(
         `Moonshot API request failed: ${response.status} ${response.statusText} - ${errorText}`
       );
@@ -310,6 +318,14 @@ export class AIService {
 
     if (!response.ok) {
       const errorText = await response.text();
+      if (response.status === 429) {
+        const retryAfter = response.headers.get("retry-after");
+        const seconds = retryAfter ? parseInt(retryAfter, 10) : undefined;
+        const friendly = seconds
+          ? `Provider rate limit reached. Please try again in ${seconds} seconds.`
+          : "Provider rate limit reached. Please try again shortly.";
+        throw new Error(friendly);
+      }
       throw new Error(
         `Moonshot API request failed: ${response.status} ${response.statusText} - ${errorText}`
       );

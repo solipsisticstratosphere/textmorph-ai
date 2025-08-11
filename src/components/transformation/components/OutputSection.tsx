@@ -298,6 +298,21 @@ export function OutputSection({
           }),
         });
 
+        if (response.status === 429) {
+          try {
+            const body = await response.json();
+            const message = (body?.error || "").toString().toLowerCase();
+            if (message.includes("provider rate limit") || message.includes("rate limit")) {
+              toast("Too many requests to the AI provider. Please try again in a moment.");
+            } else {
+              toast("You've reached your daily generation limit. Upgrade to Pro to continue.");
+            }
+          } catch {
+            toast("Too many requests. Please try again in a moment.");
+          }
+          return;
+        }
+
         const data = await response.json();
         if (!response.ok) {
           throw new Error(data.error || "Selection transformation failed");
