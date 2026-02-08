@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,61 +8,59 @@ datasource db {
 }
 
 model User {
-  id            String        @id @default(cuid())
-  name          String
-  email         String        @unique
-  password      String
-  isPro         Boolean       @default(false)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  sessions      Session[]
-  textSessions  TextSession[]
+  id              String            @id @default(cuid())
+  name            String
+  email           String            @unique
+  password        String
+  isPro           Boolean           @default(false)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  sessions        Session[]
   generationUsage GenerationUsage[]
+  textSessions    TextSession[]
 }
 
 model Session {
-  id            String    @id @default(cuid())
-  userId        String
-  token         String    @unique
-  expiresAt     DateTime
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model TextSession {
-  id            String        @id @default(cuid())
-  userId        String
-  title         String?       // Автогенерируемый или пользовательский заголовок
-  originalText  String        // Исходный введенный текст
-  finalText     String?       // Финальная версия текста
-  prompt        String        // Промпт для трансформации
-  language      String        // Язык текста
-  temperature   Float         @default(0.7)
-  isActive      Boolean       @default(true)  // Flag to track active session
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  revisions     TextRevision[]
-  
+  id           String         @id @default(cuid())
+  userId       String
+  title        String?
+  originalText String
+  finalText    String?
+  prompt       String
+  language     String
+  temperature  Float          @default(0.7)
+  isActive     Boolean        @default(true)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  revisions    TextRevision[]
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@map("text_sessions")
 }
 
 model TextRevision {
   id              String      @id @default(cuid())
   sessionId       String
-  revisionNumber  Int         // Порядковый номер ревизии
-  selectedText    String      // Выделенный фрагмент
-  transformedText String      // Результат трансформации
-  transformPrompt String      // Промпт для этой конкретной ревизии
-  startPosition   Int         // Позиция начала в тексте
-  endPosition     Int         // Позиция конца в тексте
-  preset          String?     // Использованный пресет (если есть)
+  revisionNumber  Int
+  selectedText    String
+  transformedText String
+  transformPrompt String
+  startPosition   Int
+  endPosition     Int
+  preset          String?
   createdAt       DateTime    @default(now())
-  
   session         TextSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  
+
   @@map("text_revisions")
 }
 
@@ -76,9 +68,8 @@ model TextRevision {
 model GenerationUsage {
   id        String   @id @default(cuid())
   userId    String
-  kind      String   // "full" | "selection"
+  kind      String
   createdAt DateTime @default(now())
-
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])

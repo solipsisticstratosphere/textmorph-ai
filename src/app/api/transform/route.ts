@@ -4,6 +4,7 @@ import { TransformationRequest } from "@/types";
 import { prisma } from "@/lib/prisma";
 import { getAuthUser } from "@/lib/auth";
 import { sanitizeInput, validateInput } from "@/lib/utils";
+import { logger } from "@/lib/logger";
 
 export const dynamic = "force-dynamic";
 
@@ -85,9 +86,9 @@ async function createNewSession(
     temperature?: number;
   }
 ) {
-  console.log("Creating new session for user:", userId);
+  logger.info({ userId }, "Creating new session for user");
 
-  // Деактивируем все активные сессии пользователя
+  // Deactivate all active user sessions
   const deactivated = await prisma.textSession.updateMany({
     where: {
       userId: userId,
@@ -98,9 +99,9 @@ async function createNewSession(
     },
   });
 
-  console.log("Deactivated sessions:", deactivated.count);
+  logger.info({ count: deactivated.count }, "Deactivated sessions");
 
-  // Создаем новую сессию
+  // Create new session
   const session = await prisma.textSession.create({
     data: {
       userId: userId,
@@ -110,11 +111,11 @@ async function createNewSession(
       prompt: instruction,
       language: result.detected_language || "auto",
       temperature: Math.max(0, Math.min(result.temperature || 0.7, 1)),
-      isActive: true, // Важно: устанавливаем флаг активной сессии
+      isActive: true, // Important: set active session flag
     },
   });
 
-  console.log("Created new session with ID:", session.id);
+  logger.info({ sessionId: session.id }, "Created new session");
 
   return session.id;
 }
@@ -248,7 +249,7 @@ export async function POST(request: NextRequest) {
           result
         );
       } catch (error) {
-        console.error("Failed to save text session:", error);
+        logger.error({ error }, "Failed to save text session");
       }
 
   
@@ -262,7 +263,7 @@ export async function POST(request: NextRequest) {
           });
         }
       } catch (err) {
-        console.error("Failed to record generation usage:", err);
+        logger.error({ error: err }, "Failed to record generation usage");
       }
     }
 
@@ -279,7 +280,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (currentSessionId) {
-      console.log("Setting cookie with session ID:", currentSessionId);
+      logger.info({ sessionId: currentSessionId }, "Setting cookie with session ID");
       response.cookies.set("currentSessionId", currentSessionId, {
         path: "/",
         httpOnly: true,
@@ -288,12 +289,12 @@ export async function POST(request: NextRequest) {
         maxAge: 60 * 60 * 24 * 7, // 7 days
       });
     } else {
-      console.log("No session ID to set in cookie");
+      logger.info("No session ID to set in cookie");
     }
 
     return response;
   } catch (error) {
-    console.error("Transform API error:", error);
+    logger.error({ error }, "Transform API error");
 
     return NextResponse.json(
       {

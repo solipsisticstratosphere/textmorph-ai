@@ -49,7 +49,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             )}
             ref={ref}
             transition={{ duration: 0.1 }}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // Type assertion needed: Framer Motion's event handlers conflict with HTML drag events
             {...(props as any)}
           />
           {rightIcon && (

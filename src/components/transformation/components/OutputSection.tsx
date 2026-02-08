@@ -90,14 +90,16 @@ export function OutputSection({
       const pos = textareaRef.current.selectionEnd ?? 0;
       try {
         textareaRef.current.setSelectionRange(pos, pos);
-      } catch {
+      } catch (error) {
+        // Ignore - setSelectionRange may fail in certain browser states
       }
     }
     const selection = window.getSelection?.();
     if (selection && selection.rangeCount > 0) {
       try {
         selection.removeAllRanges();
-      } catch {
+      } catch (error) {
+        // Ignore - removeAllRanges may fail when selection is in an invalid state
       }
     }
   }, []);
@@ -132,7 +134,9 @@ export function OutputSection({
     fetch("/api/history/sessions/deactivate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-    }).catch(() => {});
+    }).catch(() => {
+      // Silently fail - session deactivation is not critical for clearing output
+    });
   }, [clearOutputText, user]);
 
   const outputWordCount = getWordCount(outputText);

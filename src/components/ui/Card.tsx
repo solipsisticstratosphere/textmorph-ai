@@ -27,7 +27,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // Type assertion needed: Framer Motion's event handlers conflict with HTML drag events
         {...(props as any)}
       >
         {children}

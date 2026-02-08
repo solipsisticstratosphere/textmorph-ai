@@ -69,7 +69,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={disabled || isLoading}
         whileTap={!disabled && !isLoading ? { scale: 0.98 } : {}}
         transition={{ duration: 0.1 }}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // Type assertion needed: Framer Motion's event handlers conflict with HTML drag events
         {...(props as any)}
       >
         {/* Shimmer effect for primary and secondary buttons */}

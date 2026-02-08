@@ -12,7 +12,7 @@ interface TextareaProps
   maxLength?: number;
   showCharCount?: boolean;
   sanitize?: boolean;
-  renderMarkdown?: boolean; // Новый пропс для включения markdown
+  renderMarkdown?: boolean; 
   onTextSelection?: (selection: {
     text: string;
     start: number;
@@ -27,16 +27,16 @@ const sanitizeInput = (input: string): string => {
     .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, "");
 };
 
-// Функция для парсинга простого markdown
+// Function for parsing simple markdown
 const parseMarkdown = (text: string): React.ReactElement => {
   if (!text) return <></>;
 
-  // Разбиваем текст на части, учитывая markdown-разметку
+  // Split text into parts, considering markdown formatting
   const parts: React.ReactElement[] = [];
   let currentIndex = 0;
   let partIndex = 0;
 
-  // Регулярное выражение для поиска markdown-разметки
+  // Regular expression for finding markdown formatting
   const markdownRegex =
     /(\*\*([^*]+)\*\*)|(\*([^*]+)\*)|(`([^`]+)`)|(\[([^\]]+)\]\(([^)]+)\))/g;
 
@@ -51,21 +51,21 @@ const parseMarkdown = (text: string): React.ReactElement => {
     }
 
     if (match[1]) {
-      // Жирный текст **text**
+      // Bold text **text**
       parts.push(
         <strong key={partIndex++} className="font-bold">
           {match[2]}
         </strong>
       );
     } else if (match[3]) {
-      // Курсив *text*
+      // Italic *text*
       parts.push(
         <em key={partIndex++} className="italic">
           {match[4]}
         </em>
       );
     } else if (match[5]) {
-      // Код `text`
+      // Code `text`
       parts.push(
         <code
           key={partIndex++}
@@ -75,7 +75,7 @@ const parseMarkdown = (text: string): React.ReactElement => {
         </code>
       );
     } else if (match[7]) {
-      // Ссылка [text](url)
+      // Link [text](url)
       parts.push(
         <a
           key={partIndex++}
@@ -366,7 +366,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
             onTouchEnd={handleSelectionEvent}
             onSelect={handleSelectionChange}
             transition={{ duration: 0.1 }}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // Type assertion needed: Framer Motion's event handlers conflict with HTML drag events
             {...(props as any)}
           />
         )}

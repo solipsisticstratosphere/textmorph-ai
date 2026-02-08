@@ -4,6 +4,7 @@ import { SelectionTransformRequest } from "@/types";
 import { prisma } from "@/lib/prisma";
 import { getAuthUser } from "@/lib/auth";
 import { sanitizeInput, validateInput } from "@/lib/utils";
+import { logger } from "@/lib/logger";
 
 async function countUserGenerationsLast24h(userId: string): Promise<number> {
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -87,7 +88,7 @@ export async function POST(request: Request) {
     if (user && result.success) {
       try {
         const sessionId = data.sessionId || request.headers.get("x-session-id");
-        console.log("Selection transform - received session ID:", sessionId);
+        logger.info({ sessionId }, "Selection transform - received session ID");
 
         if (sessionId) {
           const session = await prisma.textSession.findUnique({
@@ -95,10 +96,7 @@ export async function POST(request: Request) {
           });
 
           if (session && session.userId === user.id) {
-            console.log(
-              "Found valid session, adding revision to session:",
-              sessionId
-            );
+            logger.info({ sessionId }, "Found valid session, adding revision to session");
 
             const latestRevision = await prisma.textRevision.findFirst({
               where: { sessionId: sessionId },
@@ -109,12 +107,7 @@ export async function POST(request: Request) {
               ? latestRevision.revisionNumber + 1
               : 1;
 
-            console.log(
-              "Creating revision #",
-              revisionNumber,
-              "for session:",
-              sessionId
-            );
+            logger.info({ revisionNumber, sessionId }, "Creating revision for session");
 
             await prisma.textRevision.create({
               data: {
@@ -145,17 +138,15 @@ export async function POST(request: Request) {
 
             currentSessionId = sessionId;
           } else {
-            console.log(
-              "Session not found or doesn't belong to user, creating new session"
-            );
+            logger.info("Session not found or doesn't belong to user, creating new session");
             currentSessionId = await createNewSession(user.id, data, result);
           }
         } else {
-          console.log("No session ID provided, creating new session");
+          logger.info("No session ID provided, creating new session");
           currentSessionId = await createNewSession(user.id, data, result);
         }
       } catch (error) {
-        console.error("Failed to save text revision:", error);
+        logger.error({ error }, "Failed to save text revision");
       }
 
    
@@ -169,7 +160,7 @@ export async function POST(request: Request) {
           });
         }
       } catch (err) {
-        console.error("Failed to record generation usage:", err);
+        logger.error({ error: err }, "Failed to record generation usage");
       }
     }
 
@@ -189,10 +180,7 @@ export async function POST(request: Request) {
     });
 
     if (currentSessionId) {
-      console.log(
-        "Selection API - Setting cookie with session ID:",
-        currentSessionId
-      );
+      logger.info({ sessionId: currentSessionId }, "Selection API - Setting cookie with session ID");
       response.cookies.set("currentSessionId", currentSessionId, {
         path: "/",
         httpOnly: true,
@@ -201,12 +189,12 @@ export async function POST(request: Request) {
         maxAge: 60 * 60 * 24 * 7, // 7 days
       });
     } else {
-      console.log("Selection API - No session ID to set in cookie");
+      logger.info("Selection API - No session ID to set in cookie");
     }
 
     return response;
   } catch (error) {
-    console.error("Selection transformation error:", error);
+    logger.error({ error }, "Selection transformation error");
 
     const responseHeaders = new Headers();
     responseHeaders.set("Content-Type", "application/json");
@@ -244,7 +232,7 @@ async function createNewSession(
     transformed_selection: string;
   }
 ) {
-  console.log("Selection API - Creating new session for user:", userId);
+  logger.info({ userId }, "Selection API - Creating new session for user");
 
   const deactivated = await prisma.textSession.updateMany({
     where: {
@@ -256,7 +244,7 @@ async function createNewSession(
     },
   });
 
-  console.log("Selection API - Deactivated sessions:", deactivated.count);
+  logger.info({ count: deactivated.count }, "Selection API - Deactivated sessions");
 
   const startPos = data.start_position || 0;
   const endPos = data.end_position || data.selected_text.length;
@@ -277,7 +265,7 @@ async function createNewSession(
     },
   });
 
-  console.log("Selection API - Created new session with ID:", session.id);
+  logger.info({ sessionId: session.id }, "Selection API - Created new session");
 
   await prisma.textRevision.create({
     data: {
@@ -292,10 +280,7 @@ async function createNewSession(
     },
   });
 
-  console.log(
-    "Selection API - Created first revision for session:",
-    session.id
-  );
+  logger.info({ sessionId: session.id }, "Selection API - Created first revision for session");
 
   return session.id;
 }

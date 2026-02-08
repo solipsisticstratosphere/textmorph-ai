@@ -289,8 +289,8 @@ export function SelectionTooltip({
           try {
             selection.removeAllRanges();
             selection.addRange(range);
-          } catch (e) {
-            console.log("Could not restore selection", e);
+          } catch (error) {
+            // Ignore - selection restoration may fail in certain browser states
           }
         }
         setIsLoading(null);

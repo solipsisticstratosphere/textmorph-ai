@@ -76,7 +76,6 @@ export async function downloadPDF(
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   } catch (error) {
-    console.error("PDF generation failed:", error);
     throw new Error("Failed to generate PDF");
   }
 }

@@ -72,12 +72,6 @@ export function TextDashboard({ isOpen, onClose }: TextDashboardProps) {
 
   const toggleEditing = useCallback(() => {
     setIsEditing(!isEditing);
-
-    // setTooltipPosition(null); // Removed
-    // setSelectedText(""); // Removed
-    // setSelectionStart(-1); // Removed
-    // setSelectionEnd(-1); // Removed
-
     tooltipManager.closeAllTooltips();
   }, [isEditing]);
 
@@ -88,78 +82,6 @@ export function TextDashboard({ isOpen, onClose }: TextDashboardProps) {
     [setEditableText]
   );
 
-  // const handleTextSelection = useCallback(
-  //   ({ text, start, end }: { text: string; start: number; end: number }) => {
-  //     if (!text || start === end) {
-  //       // setSelectedText(""); // Removed
-  //       // setSelectionStart(-1); // Removed
-  //       // setSelectionEnd(-1); // Removed
-  //       // setTooltipPosition(null); // Removed
-  //       return;
-  //     }
-
-  //     console.log(
-  //       "Text selected in dashboard:",
-  //       text,
-  //       "Start:",
-  //       start,
-  //       "End:",
-  //       end
-  //     );
-  //     // setSelectedText(text); // Removed
-  //     // setSelectionStart(start); // Removed
-  //     // setSelectionEnd(end); // Released
-
-  //     // if (isEditing && textareaRef.current) { // Removed
-  //     //   const textarea = textareaRef.current; // Removed
-  //     //   const rect = textarea.getBoundingClientRect(); // Removed
-
-  //     //   const tooltipX = rect.left + rect.width / 2; // Removed
-  //     //   const tooltipY = rect.top - 10; // Removed
-
-  //     //   setTooltipPosition({ x: tooltipX, y: tooltipY }); // Removed
-  //     // } // Removed
-  //   },
-  //   [isEditing]
-  // );
-
-  // const handleViewModeSelection = useCallback(
-  //   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  //   (e: React.MouseEvent) => {
-  //     if (!isEditing) return;
-
-  //     setTimeout(() => {
-  //       const selection = window.getSelection();
-  //       if (!selection || selection.rangeCount === 0) return;
-
-  //       const selectedText = selection.toString().trim();
-  //       if (!selectedText) {
-  //         // setTooltipPosition(null); // Removed
-  //         // setSelectedText(""); // Removed
-  //         return;
-  //       }
-
-  //       const range = selection.getRangeAt(0);
-  //       const rect = range.getBoundingClientRect();
-
-  //       if (rect.width === 0 && rect.height === 0) return;
-
-  //       // const tooltipX = rect.left + rect.width / 2; // Removed
-  //       // const tooltipY = rect.top - 10; // Removed
-
-  //       // setSelectedText(selectedText); // Removed
-  //       // setTooltipPosition({ x: tooltipX, y: tooltipY }); // Removed
-
-  //       const fullText = editableText;
-  //       const startIndex = fullText.indexOf(selectedText);
-  //       if (startIndex !== -1) {
-  //         // setSelectionStart(startIndex); // Removed
-  //         // setSelectionEnd(startIndex + selectedText.length); // Removed
-  //       }
-  //     }, 10);
-  //   },
-  //   [isEditing, editableText]
-  // );
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -570,23 +492,6 @@ export function TextDashboard({ isOpen, onClose }: TextDashboardProps) {
             {dashboardWordCount} words • {dashboardCharCount} characters
           </div>
 
-          {/* Индикатор активного выделения */}
-          {/* {selectedText && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="flex items-center space-x-2 bg-cyan-50 px-3 py-1 rounded-full border border-cyan-200"
-            >
-              <Wand2 className="w-4 h-4 text-cyan-600" />
-              <span className="text-sm text-cyan-700 font-medium">
-                &quot;
-                {selectedText.length > 20
-                  ? selectedText.substring(0, 20) + "..."
-                  : selectedText}
-                &quot; selected
-              </span>
-            </motion.div>
-          )} */}
         </div>
       </div>
 

@@ -39,7 +39,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       }
       return false;
     } catch (error) {
-      console.error("Error fetching user:", error);
+      // Silent failure - user will be prompted to login if needed
       return false;
     }
   };
@@ -56,7 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       }
       return false;
     } catch (error) {
-      console.error("Error refreshing token:", error);
+      // Silent failure - will trigger re-authentication if needed
       return false;
     }
   };
@@ -106,7 +106,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       toast.success("Login successful!");
       return { success: true };
     } catch (error) {
-      console.error("Login error:", error);
       toast.error("An error occurred during login");
       return { success: false, error: "An error occurred during login" };
     }
@@ -132,7 +131,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       toast.success("Registration successful!");
       return { success: true };
     } catch (error) {
-      console.error("Registration error:", error);
       toast.error("An error occurred during registration");
       return { success: false, error: "An error occurred during registration" };
     }
@@ -147,7 +145,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       toast.success("Logged out successfully");
       window.location.href = "/login";
     } catch (error) {
-      console.error("Logout error:", error);
       toast.error("An error occurred during logout");
     }
   };
